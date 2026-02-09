@@ -629,16 +629,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         else:
             return self.render_to_response(self.get_context_data(form=form))
 
-class NetworkView(TemplateView):
-    template_name = 'jobs/network.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Fetch data for the network page
-        context['students'] = User.objects.filter(user_type='applicant').exclude(id=self.request.user.id if self.request.user.is_authenticated else -1)[:6]
-        context['companies'] = Company.objects.all()[:6]
-        context['colleges'] = User.objects.filter(user_type='college').exclude(id=self.request.user.id if self.request.user.is_authenticated else -1)[:6]
-        return context
 
 class MessagingView(LoginRequiredMixin, TemplateView):
     template_name = 'jobs/messaging.html'
@@ -756,28 +747,41 @@ class NetworkView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        tab = self.request.GET.get('tab', 'discover')
+        context['active_tab'] = tab
         
-        # Connections
-        connections = Connection.objects.filter(
-            (Q(sender=user) | Q(recipient=user)) & Q(status='accepted')
+        # Base Connections Query
+        all_connections = Connection.objects.filter(
+            (Q(sender=user) | Q(recipient=user))
         ).select_related('sender', 'recipient')
         
-        # Incoming Requests
-        received_requests = Connection.objects.filter(
-            recipient=user, status='pending'
-        ).select_related('sender')
-
-        # Sent Requests (for display and exclusion)
-        sent_requests = Connection.objects.filter(
-            sender=user, status='pending'
-        ).select_related('recipient')
+        # Approved Connections
+        connections = all_connections.filter(status='accepted')
+        
+        # Tab specific data
+        if tab == 'connections':
+            # List of people the user is connected with
+            connected_users = []
+            for c in connections:
+                if c.sender == user:
+                    connected_users.append(c.recipient)
+                else:
+                    connected_users.append(c.sender)
+            context['tab_users'] = connected_users
+        elif tab == 'contacts':
+            context['tab_users'] = [] # Placeholder
+        elif tab == 'following':
+            context['tab_users'] = [] # Placeholder
+        elif tab == 'events':
+            context['tab_users'] = [] # Placeholder
+            
+        # Common data for Discover/Invitations
+        received_requests = all_connections.filter(recipient=user, status='pending')
+        sent_requests = all_connections.filter(sender=user, status='pending')
         
         sent_requests_ids = sent_requests.values_list('recipient_id', flat=True)
-        
-        # Received Requests IDs (to exclude from suggestions)
         received_requests_ids = received_requests.values_list('sender_id', flat=True)
 
-        # Exclude IDs
         connected_ids = set()
         for c in connections:
             connected_ids.add(c.sender.id)
@@ -787,12 +791,13 @@ class NetworkView(LoginRequiredMixin, TemplateView):
         exclude_ids = exclude_ids.union(set(received_requests_ids))
         exclude_ids.add(user.id)
         
-        # Suggestions (Simple logic: excluding connected/pending)
-        # Explicitly cast to list to ensure compatibility
         context['suggested_users'] = User.objects.exclude(id__in=list(exclude_ids))[:6]
         context['received_requests'] = received_requests
         context['sent_requests'] = sent_requests
         context['my_network_count'] = len(connected_ids) - 1 if user.id in connected_ids else len(connected_ids)
+        
+        # Companies for discover
+        context['companies'] = Company.objects.all()[:6]
         
         return context
 

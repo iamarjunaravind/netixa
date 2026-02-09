@@ -12,21 +12,34 @@
                 <div class="card-body p-0">
                     <h5 class="fw-bold p-3 border-bottom m-0">Manage network</h5>
                     <ul class="list-unstyled m-0">
-                        <li class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light cursor-pointer text-dark">
-                            <span><i class="fas fa-user-friends me-3 text-secondary"></i> Connections</span>
-                            <span class="fw-bold text-primary">{{ my_network_count }}</span>
+                        <li>
+                            <a href="?tab=discover" class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light text-decoration-none {% if active_tab == 'discover' %}bg-light fw-bold text-primary{% else %}text-dark{% endif %}">
+                                <span><i class="fas fa-search me-3 text-secondary"></i> Discover</span>
+                            </a>
                         </li>
-                        <li class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light cursor-pointer text-dark">
-                            <span><i class="fas fa-address-book me-3 text-secondary"></i> Contacts</span>
-                            <span class="fw-bold text-muted">0</span>
+                        <li>
+                            <a href="?tab=connections" class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light text-decoration-none {% if active_tab == 'connections' %}bg-light fw-bold text-primary{% else %}text-dark{% endif %}">
+                                <span><i class="fas fa-user-friends me-3 text-secondary"></i> Connections</span>
+                                <span class="fw-bold {% if active_tab == 'connections' %}text-primary{% else %}text-muted{% endif %}">{{ my_network_count }}</span>
+                            </a>
                         </li>
-                        <li class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light cursor-pointer text-dark">
-                            <span><i class="fas fa-user-check me-3 text-secondary"></i> Following & Followers</span>
-                            <span class="fw-bold text-muted">0</span>
+                        <li>
+                            <a href="?tab=contacts" class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light text-decoration-none {% if active_tab == 'contacts' %}bg-light fw-bold text-primary{% else %}text-dark{% endif %}">
+                                <span><i class="fas fa-address-book me-3 text-secondary"></i> Contacts</span>
+                                <span class="fw-bold text-muted">0</span>
+                            </a>
                         </li>
-                        <li class="d-flex justify-content-between align-items-center p-3 hover-bg-light cursor-pointer text-dark">
-                            <span><i class="fas fa-calendar-alt me-3 text-secondary"></i> Events</span>
-                            <span class="fw-bold text-muted">0</span>
+                        <li>
+                            <a href="?tab=following" class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg-light text-decoration-none {% if active_tab == 'following' %}bg-light fw-bold text-primary{% else %}text-dark{% endif %}">
+                                <span><i class="fas fa-user-check me-3 text-secondary"></i> Following & Followers</span>
+                                <span class="fw-bold text-muted">0</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?tab=events" class="d-flex justify-content-between align-items-center p-3 hover-bg-light text-decoration-none {% if active_tab == 'events' %}bg-light fw-bold text-primary{% else %}text-dark{% endif %}">
+                                <span><i class="fas fa-calendar-alt me-3 text-secondary"></i> Events</span>
+                                <span class="fw-bold text-muted">0</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -35,114 +48,163 @@
 
         <!-- Main Content -->
         <div class="col-lg-9">
-            <!-- Invitations -->
-            <div class="card border mb-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold">Invitations</h5>
-                </div>
-                <div class="card-body py-3">
-                    {% if received_requests %}
-                    <ul class="list-group list-group-flush">
-                        {% for req in received_requests %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center px-0" id="request-{{ req.id }}">
-                            <div class="d-flex align-items-center">
-                                {% if req.sender.profile_picture %}
-                                    <img src="{{ req.sender.profile_picture.url }}" class="rounded-circle me-3" width="60" height="60" style="object-fit: cover;">
-                                {% else %}
-                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
-                                        {{ req.sender.username.0|upper }}
+            {% if active_tab == 'discover' %}
+                <!-- Invitations -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold">Invitations</h5>
+                    </div>
+                    <div class="card-body py-3">
+                        {% if received_requests %}
+                        <ul class="list-group list-group-flush">
+                            {% for req in received_requests %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0" id="request-{{ req.id }}">
+                                <div class="d-flex align-items-center">
+                                    {% if req.sender.profile_picture %}
+                                        <img src="{{ req.sender.profile_picture.url }}" class="rounded-circle me-3" width="60" height="60" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                            {{ req.sender.username.0|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ req.sender.get_full_name|default:req.sender.username }}</h6>
+                                        <small class="text-muted">{{ req.sender.job_role|default:"Student" }}</small>
                                     </div>
-                                {% endif %}
+                                </div>
                                 <div>
-                                    <h6 class="fw-bold mb-0">{{ req.sender.get_full_name|default:req.sender.username }}</h6>
-                                    <small class="text-muted">{{ req.sender.job_role|default:"Student" }}</small>
+                                    <button class="btn btn-outline-secondary btn-sm me-2" onclick="handleRequest({{ req.id }}, 'reject')">Ignore</button>
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="handleRequest({{ req.id }}, 'accept')">Accept</button>
                                 </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-envelope-open-text fa-3x text-muted opacity-50"></i>
                             </div>
-                            <div>
-                                <button class="btn btn-outline-secondary btn-sm me-2" onclick="handleRequest({{ req.id }}, 'reject')">Ignore</button>
-                                <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="handleRequest({{ req.id }}, 'accept')">Accept</button>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <div class="mb-3">
-                            <i class="fas fa-envelope-open-text fa-3x text-muted opacity-50"></i>
+                            <h5 class="text-secondary fw-bold">No pending invitations</h5>
+                            <p class="text-muted small">New invites will appear here</p>
                         </div>
-                        <h5 class="text-secondary fw-bold">No pending invitations</h5>
-                        <p class="text-muted small">New invites will appear here</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Suggested Students -->
-            <div class="card border mb-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold">Students you may know</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        {% for student in suggested_users %}
-                        <div class="col-md-4 col-sm-6" id="user-card-{{ student.id }}">
-                            <div class="card h-100 text-center p-3 border-0 shadow-sm bg-light">
-                                <div class="mb-3">
-                                    {% if student.profile_picture %}
-                                        <img src="{{ student.profile_picture.url }}" alt="{{ student.username }}" class="rounded-circle" width="80" height="80" style="object-fit: cover;">
-                                    {% else %}
-                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
-                                            {{ student.username.0|upper }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <h6 class="fw-bold mb-1">{{ student.first_name }} {{ student.last_name|default:student.username }}</h6>
-                                <p class="text-muted small mb-3">{{ student.job_role|default:"Student" }}</p>
-                                <button class="btn btn-primary btn-sm rounded-pill px-4" onclick="connectUser({{ student.id }})">Connect</button>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="col-12 text-center py-3">
-                            <p class="text-muted">No suggestions found.</p>
-                        </div>
-                        {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
-            </div>
 
-            <!-- Companies (Static for now) -->
-            <div class="card border mb-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold">Companies to follow</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        {% for company in companies %}
-                        <div class="col-md-4 col-sm-6">
-                            <div class="card h-100 text-center p-3 border-0 shadow-sm bg-light">
-                                <div class="mb-3">
-                                    {% if company.logo %}
-                                        <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="rounded-circle" width="80" height="80" style="object-fit: contain; background: white;">
-                                    {% else %}
-                                        <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
-                                            <i class="fas fa-building"></i>
-                                        </div>
-                                    {% endif %}
+                <!-- Suggested Students -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold">Students you may know</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for student in suggested_users %}
+                            <div class="col-md-4 col-sm-6" id="user-card-{{ student.id }}">
+                                <div class="card h-100 text-center p-3 border-0 shadow-sm bg-light">
+                                    <div class="mb-3">
+                                        {% if student.profile_picture %}
+                                            <img src="{{ student.profile_picture.url }}" alt="{{ student.username }}" class="rounded-circle" width="80" height="80" style="object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                                                {{ student.username.0|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="fw-bold mb-1">{{ student.first_name }} {{ student.last_name|default:student.username }}</h6>
+                                    <p class="text-muted small mb-3">{{ student.job_role|default:"Student" }}</p>
+                                    <button class="btn btn-primary btn-sm rounded-pill px-4" onclick="connectUser({{ student.id }})">Connect</button>
                                 </div>
-                                <h6 class="fw-bold mb-1">{{ company.name }}</h6>
-                                <p class="text-muted small mb-3">{{ company.location }}</p>
-                                <button class="btn btn-outline-dark btn-sm rounded-pill px-4">Follow</button>
                             </div>
+                            {% empty %}
+                            <div class="col-12 text-center py-3">
+                                <p class="text-muted">No suggestions found.</p>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% empty %}
-                        <div class="col-12 text-center py-3">
-                            <p class="text-muted">No companies found.</p>
-                        </div>
-                        {% endfor %}
                     </div>
                 </div>
-            </div>
 
+                <!-- Companies -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold">Companies to follow</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for company in companies %}
+                            <div class="col-md-4 col-sm-6">
+                                <div class="card h-100 text-center p-3 border-0 shadow-sm bg-light">
+                                    <div class="mb-3">
+                                        {% if company.logo %}
+                                            <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="rounded-circle" width="80" height="80" style="object-fit: contain; background: white;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="fw-bold mb-1">{{ company.name }}</h6>
+                                    <p class="text-muted small mb-3">{{ company.location }}</p>
+                                    <button class="btn btn-outline-dark btn-sm rounded-pill px-4">Follow</button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12 text-center py-3">
+                                <p class="text-muted">No companies found.</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% elif active_tab == 'connections' %}
+                <div class="card border mb-4">
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">Your Connections</h5>
+                        <span class="badge bg-light text-primary border rounded-pill px-3">{{ my_network_count }} total</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for user in tab_users %}
+                            <div class="col-md-4 col-sm-6">
+                                <div class="card h-100 text-center p-3 border shadow-sm">
+                                    <div class="mb-3">
+                                        {% if user.profile_picture %}
+                                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle" width="80" height="80" style="object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                                                {{ user.username.0|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h6>
+                                    <p class="text-muted small mb-3">{{ user.job_role|default:"Connection" }}</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'jobs:messaging' %}?user={{ user.id }}" class="btn btn-outline-primary btn-sm rounded-pill">Message</a>
+                                        <a href="{% url 'jobs:resume_view' user.id %}" class="btn btn-link btn-sm text-decoration-none text-muted">View Profile</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12 text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted opacity-25 mb-3"></i>
+                                <h5 class="text-secondary">No connections yet</h5>
+                                <p class="text-muted">Start connecting with people to grow your network.</p>
+                                <a href="?tab=discover" class="btn btn-primary btn-sm rounded-pill px-4">Find People</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card border mb-4">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-tools fa-3x text-muted opacity-25 mb-3"></i>
+                        <h5 class="text-secondary">{{ active_tab|title }} section is coming soon!</h5>
+                        <p class="text-muted">We're working hard to bring this feature to you.</p>
+                        <a href="?tab=discover" class="btn btn-primary btn-sm rounded-pill px-4">Back to Discover</a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
