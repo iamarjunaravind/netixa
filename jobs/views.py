@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib import messages
 from django.db.models import Q, Exists, OuterRef
 from django.http import JsonResponse
-from .models import Job, Application, Category, Company, User, Subscription, SavedJob, HiddenJob, Course, CourseCategory, Enrollment, CourseModule, Lesson, Article, ArticleCategory, Message, Connection
+from .models import Job, Application, Category, Company, User, Subscription, SavedJob, HiddenJob, Course, CourseCategory, Enrollment, CourseModule, Lesson, Article, ArticleCategory, Message, Connection, UserProgress, Assignment, Submission
 from .forms import ApplicantSignUpForm, EmployerSignUpForm, CollegeSignUpForm, ProfileEditForm, EducationFormSet, ExperienceFormSet, ApplicationForm, JobForm, CompanyForm
 from django.urls import reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
