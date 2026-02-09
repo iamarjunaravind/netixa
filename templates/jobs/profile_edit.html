@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - JobPortal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .photo-preview-wrapper {
+        width: 140px;
+        height: 140px;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        cursor: pointer;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid white;
+        box-shadow: var(--shadow-md);
+    }
+    .profile-preview-img, .photo-placeholder {
+        width: 100%; height: 100%; object-fit: cover;
+    }
+    .photo-placeholder {
+        background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--secondary-light);
+    }
+    .photo-overlay {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: rgba(0,0,0,0.6); color: white;
+        height: 40px; display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.2s;
+    }
+    .photo-preview-wrapper:hover .photo-overlay { opacity: 1; }
+
+    .edit-form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-light);
+    }
+
+    .form-section-title {
+        border-bottom: 2px solid var(--bg-surface);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--secondary-main);
+    }
+
+    .formset-item {
+        background: var(--bg-surface);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-light);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <div class="photo-preview-wrapper" onclick="document.getElementById('{{ form.profile_picture.id_for_label }}').click();">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" id="photo-preview" class="profile-preview-img">
+                    {% else %}
+                    <div class="photo-placeholder" id="photo-preview">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    {% endif %}
+                    <div class="photo-overlay">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+                <!-- Hidden file input linked by JS/Label -->
+                <h1 class="h3 fw-bold">Edit Profile</h1>
+                <p class="text-muted">Update your details and professional background</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display: none;">{{ form.profile_picture }}</div>
+
+                <!-- Personal Details -->
+                <div class="edit-form-card">
+                    <h2 class="form-section-title"><i class="fas fa-user me-2 text-primary"></i> Personal Details</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Age</label>
+                            {{ form.age }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date of Birth</label>
+                            {{ form.dob }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            {{ form.address }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Info -->
+                <div class="edit-form-card">
+                    <h2 class="form-section-title"><i class="fas fa-briefcase me-2 text-primary"></i> Professional Info</h2>
+                    <div class="row g-3">
+                         <div class="col-md-6">
+                            <label class="form-label">Headline / Role</label>
+                            {{ form.job_role }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Position</label>
+                            {{ form.current_position }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Professional Bio</label>
+                            {{ form.bio }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="edit-form-card">
+                    <div class="d-flex justify-content-between align-items-center form-section-title mb-3 border-0 pb-0">
+                        <h2 class="h5 mb-0 fw-bold"><i class="fas fa-graduation-cap me-2 text-primary"></i> Academic Details</h2>
+                        <button type="button" class="btn btn-sm btn-outline-primary add-formset" data-target="education">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <hr class="mt-0 mb-4">
+                    
+                    {{ education_formset.management_form }}
+                    <div id="education-formset">
+                        {% for education_form in education_formset %}
+                        <div class="formset-item">
+                            {{ education_form.id }}
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-6">
+                                    <label class="form-label">Course Name</label>
+                                    {{ education_form.course }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">College / University</label>
+                                    {{ education_form.college }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Start Date</label>
+                                    {{ education_form.start_date }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">End Date</label>
+                                    {{ education_form.end_date }}
+                                </div>
+                                {% if education_form.instance.pk %}
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        {{ education_form.DELETE }}
+                                        <label class="form-check-label text-danger small">Delete</label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="edit-form-card">
+                    <div class="d-flex justify-content-between align-items-center form-section-title mb-3 border-0 pb-0">
+                        <h2 class="h5 mb-0 fw-bold"><i class="fas fa-history me-2 text-primary"></i> Experience Details</h2>
+                        <button type="button" class="btn btn-sm btn-outline-primary add-formset" data-target="experience">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                     <hr class="mt-0 mb-4">
+
+                    {{ experience_formset.management_form }}
+                    <div id="experience-formset">
+                         {% for experience_form in experience_formset %}
+                        <div class="formset-item">
+                            {{ experience_form.id }}
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-6">
+                                    <label class="form-label">Job Title</label>
+                                    {{ experience_form.title }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Name</label>
+                                    {{ experience_form.company }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Start Date</label>
+                                    {{ experience_form.start_date }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">End Date</label>
+                                    {{ experience_form.end_date }}
+                                </div>
+                                {% if experience_form.instance.pk %}
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        {{ experience_form.DELETE }}
+                                        <label class="form-check-label text-danger small">Delete</label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- CV -->
+                <div class="edit-form-card">
+                    <h2 class="form-section-title"><i class="fas fa-file-pdf me-2 text-primary"></i> Curriculum Vitae</h2>
+                    <div class="mb-3">
+                        {{ form.cv }}
+                        <div class="form-text">
+                            Current: 
+                            {% if user.cv %}
+                            <a href="{{ user.cv.url }}" target="_blank" class="fw-bold">Download CV</a>
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Account (Compliance) -->
+                <div class="edit-form-card border-danger" style="border-width: 1px; border-style: dashed;">
+                    <h2 class="form-section-title text-danger border-0 mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Danger Zone</h2>
+                    <p class="text-muted small">Once you delete your account, there is no going back. Please be certain.</p>
+                    <a href="mailto:grievance@netixa.com?subject=Delete Account Request: {{ user.username }}" class="btn btn-outline-danger btn-sm">Request Account Deletion</a>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mb-5">
+                    <a href="{% url 'jobs:profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-pill-lg px-5">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Empty Forms templates for JS -->
+    <div id="education-empty-form" style="display: none;">
+        <div class="formset-item">
+            {{ education_formset.empty_form.id }}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">Course Name</label>
+                    {{ education_formset.empty_form.course }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">College / University</label>
+                    {{ education_formset.empty_form.college }}
+                </div>
+                 <div class="col-md-6">
+                    <label class="form-label">Start Date</label>
+                    {{ education_formset.empty_form.start_date }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">End Date</label>
+                    {{ education_formset.empty_form.end_date }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="experience-empty-form" style="display: none;">
+        <div class="formset-item">
+            {{ experience_formset.empty_form.id }}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">Job Title</label>
+                    {{ experience_formset.empty_form.title }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Company Name</label>
+                    {{ experience_formset.empty_form.company }}
+                </div>
+                 <div class="col-md-6">
+                    <label class="form-label">Start Date</label>
+                    {{ experience_formset.empty_form.start_date }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">End Date</label>
+                    {{ experience_formset.empty_form.end_date }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Ensure form controls have bootstrap class
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="date"], select, textarea');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                 if (input.tagName === 'SELECT') {
+                    input.classList.add('form-select');
+                 } else {
+                    input.classList.add('form-control');
+                 }
+            }
+        });
+        
+        // Also file inputs
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => input.classList.add('form-control'));
+    });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('{{ form.profile_picture.id_for_label }}').addEventListener('change', function (e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById('photo-preview');
+                if (preview.tagName === 'IMG') {
+                    preview.src = e.target.result;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'profile-preview-img';
+                    img.id = 'photo-preview';
+                    preview.parentNode.replaceChild(img, preview);
+                }
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+    document.querySelectorAll('.add-formset').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const target = this.dataset.target;
+            const container = document.getElementById(`${target}-formset`);
+            const emptyForm = document.getElementById(`${target}-empty-form`).innerHTML;
+            const totalForms = document.getElementById(`id_${target}-TOTAL_FORMS`);
+            const currentCount = parseInt(totalForms.value);
+
+            const newForm = emptyForm.replace(/__prefix__/g, currentCount);
+            container.insertAdjacentHTML('beforeend', newForm);
+
+            totalForms.value = currentCount + 1;
+        });
+    });
+</script>
+{% endblock %}

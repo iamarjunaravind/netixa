@@ -1,0 +1,116 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}My Learning | Netixa{% endblock %}
+
+{% block dashboard_title %}Learning Portal{% endblock %}
+
+{% block dashboard_content %}
+<div class="row g-4 mb-5">
+    <!-- Stats Cards -->
+    <div class="col-md-4">
+        <div class="stat-widget">
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div>
+                <div class="stat-label">Enrolled</div>
+                <div class="stat-value">{{ enrollments.count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-widget">
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="fas fa-certificate"></i>
+            </div>
+            <div>
+                <div class="stat-label">Certificates</div>
+                <div class="stat-value">{{ certificates_count|default:0 }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-widget">
+            <div class="stat-icon bg-purple bg-opacity-10 text-purple">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div>
+                <div class="stat-label">Avg. Progress</div>
+                <div class="stat-value" style="font-size: 1.5rem;">Coming Soon</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0">Continue Learning</h5>
+            <a href="{% url 'jobs:learn' %}" class="btn btn-sm btn-outline rounded-pill px-3">Explore More</a>
+        </div>
+        
+        <div class="row g-4">
+            {% for enrollment in enrollments %}
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100 hvr-shadow transition">
+                    <div class="ratio ratio-16x9 bg-light">
+                        {% if enrollment.course.image %}
+                        <img src="{{ enrollment.course.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ enrollment.course.title }}">
+                        {% else %}
+                            {% with cat_name=enrollment.course.category.parent.name|default:enrollment.course.category.name %}
+                            <img src="https://images.unsplash.com/photo-{% if cat_name == 'Development' %}1498050108023-c5249f4df085{% elif cat_name == 'Marketing' %}1460925895917-afdab827c52f{% elif cat_name == 'Trading' %}1611974714014-486ccf83244c{% elif cat_name == 'Designing' %}1558655146-d09347e92766{% else %}1544367567-0f2fcb009e0b{% endif %}?auto=format&fit=crop&w=800&q=80" 
+                                 class="w-100 h-100 object-fit-cover opacity-75" 
+                                 alt="{{ enrollment.course.title }}">
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="text-xs fw-bold text-primary text-uppercase">{{ enrollment.course.category.name }}</span>
+                        </div>
+                        <h6 class="fw-bold mb-3 text-dark">{{ enrollment.course.title }}</h6>
+                        
+                        <div class="mt-auto">
+                            <div class="progress mb-3" style="height: 6px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'jobs:course_detail' enrollment.course.slug %}" class="btn btn-light btn-sm flex-grow-1 fw-bold text-xs rounded-pill">Syllabus</a>
+                                {% with first_lesson=enrollment.course.modules.all.0.lessons.all.0 %}
+                                    {% if first_lesson %}
+                                    <a href="{% url 'jobs:lesson_detail' first_lesson.slug %}" class="btn btn-primary btn-sm flex-grow-1 fw-bold text-xs rounded-pill">Continue</a>
+                                    {% else %}
+                                    <button class="btn btn-secondary btn-sm flex-grow-1 fw-bold text-xs rounded-pill" disabled>No Content</button>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card dashboard-card border-dashed py-5 text-center bg-transparent">
+                    <div class="mb-4">
+                        <i class="fas fa-book-open fa-3x text-muted opacity-25"></i>
+                    </div>
+                    <h5 class="fw-bold">No courses yet</h5>
+                    <p class="text-muted small mb-4">Start your journey today by exploring our hand-picked courses.</p>
+                    <a href="{% url 'jobs:learn' %}" class="btn btn-primary px-4 fw-bold rounded-pill">Browse Hub</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-purple { background-color: #9333ea; }
+    .hvr-shadow:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important; transform: translateY(-3px); }
+    .transition { transition: all 0.3s ease; }
+    .border-dashed { border: 2px dashed var(--border-light) !important; }
+    .text-xs { font-size: 0.75rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Course | Netixa{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="h3 fw-bold mb-4">Create New Course</h1>
+            <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                <div class="card-body p-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">{{ field.label }}</label>
+                            {{ field }}
+                             {% if field.help_text %}
+                            <div class="form-text mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-end gap-3 mt-5">
+                            <a href="{% url 'jobs:college_dashboard' %}" class="btn btn-ghost fw-bold">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold">Create Course</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if(input.type !== 'checkbox' && input.type !== 'file') input.classList.add('form-control', 'form-control-lg');
+            if(input.type === 'file') input.classList.add('form-control');
+            if(input.type === 'checkbox') input.classList.add('form-check-input');
+            if(input.tagName === 'SELECT') input.classList.add('form-select', 'form-select-lg');
+        });
+    });
+</script>
+{% endblock %}

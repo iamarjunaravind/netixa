@@ -1,0 +1,610 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="apply-page-wrapper">
+    <div class="form-container">
+        <div class="apply-card">
+            <div class="header-section">
+                <div class="job-icon-placeholder">
+                    <span>{{ job.company.name|slice:":1" }}</span>
+                </div>
+                <div class="header-content">
+                    <h1>Apply for <span class="text-gradient">{{ job.title }}</span></h1>
+                    <p class="subtitle">at <strong>{{ job.company.name }}</strong></p>
+                </div>
+            </div>
+    
+            <form method="POST" enctype="multipart/form-data" class="apply-form" id="application-form">
+                {% csrf_token %}
+    
+                <div class="application-choice-section">
+                    <label class="section-label">Choose Application Method</label>
+                    
+                    <div class="choice-grid">
+                        <!-- Option 1: Apply with Profile -->
+                        <label class="choice-card profile-card {% if not profile_complete %}disabled{% endif %}">
+                            <input type="radio" name="application_type" value="profile" 
+                                   {% if not profile_complete %}disabled{% endif %}
+                                   onchange="toggleUploadSection(false)">
+                            <div class="card-content">
+                                <span class="badge-recommended">Recommended</span>
+                                <div class="icon-wrapper">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <h3>Quick Apply</h3>
+                                <p>Use your JobPortal profile.</p>
+                                {% if not profile_complete %}
+                                    <div class="status-indicator warning">
+                                        <i class="fas fa-exclamation-triangle"></i> Incomplete Profile
+                                        <a href="{% url 'jobs:profile_edit' %}" class="fix-link">Fix Now</a>
+                                    </div>
+                                {% else %}
+                                    <div class="status-indicator success">
+                                        <i class="fas fa-check-circle"></i> Ready to Send
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="selection-ring"></div>
+                        </label>
+    
+                        <!-- Option 2: Upload Resume -->
+                        <label class="choice-card upload-card">
+                            <input type="radio" name="application_type" value="upload" checked
+                                   onchange="toggleUploadSection(true)">
+                            <div class="card-content">
+                                <div class="icon-wrapper">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h3>Upload Resume</h3>
+                                <p>Use a specific CV for this job.</p>
+                                <div class="status-indicator neutral">
+                                    <i class="fas fa-file-pdf"></i> PDF/DOCX
+                                </div>
+                            </div>
+                            <div class="selection-ring"></div>
+                        </label>
+                    </div>
+                </div>
+    
+                <div class="form-section upload-section" id="upload-container">
+                    <div class="custom-file-input-group">
+                        <label for="{{ form.resume.id_for_label }}" class="file-label-main">Upload Resume Document</label>
+                        {{ form.resume }}
+                        {% if form.resume.errors %}
+                        <span class="error-msg"><i class="fas fa-times-circle"></i> {{ form.resume.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+    
+                <div class="form-section">
+                    <label for="{{ form.cover_letter.id_for_label }}" class="input-label">Cover Letter <span class="optional">(Optional)</span></label>
+                    {{ form.cover_letter }}
+                    {% if form.cover_letter.errors %}
+                    <span class="error-msg">{{ form.cover_letter.errors.0 }}</span>
+                    {% endif %}
+                </div>
+    
+                <!-- Preview Modal -->
+                <div id="preview-modal" class="preview-overlay" style="display: none;">
+                    <div class="preview-box">
+                        <div class="preview-header">
+                            <h2>Review Application</h2>
+                            <button type="button" class="close-btn" onclick="closePreview()">&times;</button>
+                        </div>
+                        <div class="preview-body">
+                            <div class="preview-item">
+                                <span class="label">Job Role</span>
+                                <span class="value">{{ job.title }}</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="label">Company</span>
+                                <span class="value">{{ job.company.name }}</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="label">Applicant</span>
+                                <span class="value">{{ user.get_full_name|default:user.username }}</span>
+                            </div>
+                            <div class="preview-item highlight">
+                                <span class="label">Method</span>
+                                <span class="value" id="preview-method"></span>
+                            </div>
+                            <div class="preview-item" id="preview-file-name" style="display:none;">
+                                <span class="label">Resume File</span>
+                                <span class="value filename"></span>
+                            </div>
+                        </div>
+                        <div class="preview-footer">
+                            <button type="button" class="btn-ghost" onclick="closePreview()">Back to Edit</button>
+                            <button type="submit" class="btn-submit-final">Confirm & Apply</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="form-actions-main">
+                    <a href="{% url 'jobs:job_detail' job.id %}" class="btn-cancel">Cancel</a>
+                    <button type="button" class="btn-submit-init" onclick="showPreview()">Review & Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Standard CSS Variables */
+    /* Modern Standard CSS Variables - Linked to Global Theme */
+    :root {
+        --primary-brand: var(--primary-main);
+        --primary-brand-dark: var(--primary-dark);
+        --accent-color: #0ea5e9; /* Light blue accent */
+        --success-color: var(--accent-success);
+        --warning-color: var(--accent-warning);
+        --text-dark: var(--secondary-main);
+        --text-medium: var(--secondary-light);
+        --text-light: #94a3b8;
+        --bg-page: var(--bg-body);
+        --bg-card: var(--bg-surface);
+        --border-color: var(--border-light);
+        --radius-lg: var(--radius-lg);
+        --radius-md: var(--radius-md);
+        --shadow-sm: var(--shadow-sm);
+        --shadow-md: var(--shadow-md);
+        --shadow-lg: var(--shadow-lg);
+    }
+
+    .apply-page-wrapper {
+        min-height: 100vh;
+        background-color: var(--bg-page);
+        padding: 2rem 1rem;
+        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .apply-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .header-section {
+        padding: 2.5rem;
+        background: linear-gradient(to right, #fdfbfb, #ebedee);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .job-icon-placeholder {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-brand);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+    }
+
+    .header-content h1 {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .text-gradient {
+        background: linear-gradient(45deg, var(--primary-brand), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        color: var(--text-medium);
+        margin-top: 0.25rem;
+        font-size: 1.1rem;
+    }
+
+    .apply-form {
+        padding: 2.5rem;
+    }
+
+    .section-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+    }
+
+    .choice-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .choice-card {
+        position: relative;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .choice-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-brand-light);
+    }
+
+    .choice-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    /* Active State Styling */
+    .choice-card:has(input:checked) {
+        border-color: var(--primary-brand);
+        background-color: #eef2ff;
+    }
+
+    .choice-card:has(input:checked) .icon-wrapper {
+        transform: scale(1.1);
+    }
+
+    .choice-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #f3f4f6;
+    }
+    .choice-card.disabled:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: var(--border-color);
+    }
+
+    .icon-wrapper {
+        font-size: 2rem;
+        color: var(--text-medium);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .choice-card:has(input:checked) .icon-wrapper {
+        color: var(--primary-brand);
+    }
+
+    .badge-recommended {
+        position: absolute;
+        top: -12px;
+        background: var(--success-color);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .card-content h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .card-content p {
+        font-size: 0.875rem;
+        color: var(--text-medium);
+        line-height: 1.5;
+    }
+
+    .status-indicator {
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-indicator.success { background: #d1fae5; color: #065f46; }
+    .status-indicator.warning { background: #fef3c7; color: #92400e; }
+    .status-indicator.neutral { background: #f3f4f6; color: #4b5563; }
+
+    .fix-link {
+        color: #92400e;
+        text-decoration: underline;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        transition: border-color 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-brand);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    /* Buttons */
+    .form-actions-main {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-submit-init {
+        background: linear-gradient(135deg, var(--primary-brand), var(--primary-brand-dark));
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-submit-init:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 0.875rem 2rem;
+        color: var(--text-medium);
+        text-decoration: none;
+        font-weight: 500;
+        border-radius: var(--radius-md);
+        transition: background 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background: var(--bg-page);
+        color: var(--text-dark);
+    }
+
+    /* Upload Input Styling */
+    input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+        background: white;
+        border: 1px dashed var(--border-color);
+        border-radius: var(--radius-md);
+    }
+    
+    .error-msg {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .custom-file-input-group {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Preview Modal */
+    .preview-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        backdrop-filter: blur(4px);
+    }
+
+    .preview-box {
+        background: white;
+        width: 90%;
+        max-width: 500px;
+        border-radius: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .preview-header {
+        background: var(--bg-page);
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .preview-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: var(--text-dark);
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-light);
+    }
+
+    .preview-body {
+        padding: 2rem;
+    }
+
+    .preview-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--bg-page);
+        padding-bottom: 0.5rem;
+    }
+    
+    .preview-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .preview-item .label {
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .preview-item .value {
+        color: var(--text-dark);
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .preview-footer {
+        padding: 1.5rem;
+        background: var(--bg-page);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .btn-submit-final {
+        background: var(--success-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-ghost {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        color: var(--text-medium);
+        cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+        .choice-grid {
+            grid-template-columns: 1fr;
+        }
+        .header-section {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    function toggleUploadSection(show) {
+        const uploadContainer = document.getElementById('upload-container');
+        const resumeInput = document.querySelector('input[name="resume"]');
+        if (show) {
+            uploadContainer.style.display = 'block';
+            resumeInput.required = true;
+        } else {
+            uploadContainer.style.display = 'none';
+            resumeInput.required = false;
+        }
+    }
+
+    function showPreview() {
+        // Validate
+        const appType = document.querySelector('input[name="application_type"]:checked').value;
+        const resumeInput = document.querySelector('input[name="resume"]');
+        
+        if (appType === 'upload' && !resumeInput.files[0]) {
+            alert("Please upload a resume first.");
+            return;
+        }
+
+        // Populate Preview
+        document.getElementById('preview-method').textContent = appType === 'profile' ? 'JobPortal Profile' : 'Uploaded Resume';
+        
+        const fileDisplay = document.getElementById('preview-file-name');
+        if (appType === 'upload') {
+            fileDisplay.style.display = 'flex';
+            fileDisplay.querySelector('.filename').textContent = resumeInput.files[0].name;
+        } else {
+            fileDisplay.style.display = 'none';
+        }
+
+        document.getElementById('preview-modal').style.display = 'flex';
+    }
+
+    function closePreview() {
+        document.getElementById('preview-modal').style.display = 'none';
+    }
+
+    // Initialize state
+    document.addEventListener('DOMContentLoaded', function() {
+        const isProfileComplete = "{{ profile_complete|yesno:'true,false' }}" === "true";
+
+        if (!isProfileComplete) {
+            // If profile incomplete, force upload option
+            // Find the radio button with value 'upload'
+            const uploadRadio = document.querySelector('input[name="application_type"][value="upload"]');
+            if (uploadRadio) {
+                uploadRadio.checked = true;
+                toggleUploadSection(true);
+            }
+        } else {
+            // Default to profile if complete
+            const profileRadio = document.querySelector('input[name="application_type"][value="profile"]');
+            if (profileRadio) {
+                profileRadio.checked = true;
+                toggleUploadSection(false);
+            }
+        }
+    });
+</script>
+{% endblock %}

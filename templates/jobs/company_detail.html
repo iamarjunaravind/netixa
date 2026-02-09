@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ company.name }} | Netixa{% endblock %}
+
+{% block content %}
+<div class="bg-dark py-5 text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center text-md-start mb-3 mb-md-0">
+                {% if company.logo %}
+                    <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="img-fluid rounded bg-white p-2 shadow-sm" style="width: 120px; height: 120px; object-fit: contain;">
+                {% else %}
+                    <div class="bg-white rounded d-flex align-items-center justify-content-center mx-auto mx-md-0" style="width: 120px; height: 120px;">
+                        <i class="fas fa-building fa-3x text-muted opacity-50"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-8 text-center text-md-start">
+                <h1 class="fw-bold mb-2">{{ company.name }}</h1>
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start text-white-50">
+                    <span><i class="fas fa-map-marker-alt me-2"></i>{{ company.location }}</span>
+                    {% if company.website %}
+                        <a href="{{ company.website }}" target="_blank" class="text-white-50 text-decoration-none hover-text-white">
+                            <i class="fas fa-globe me-2"></i>Website
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <!-- Sidebar / Company Info -->
+        <div class="col-lg-4">
+             <div class="card border-0 shadow-sm mb-4">
+                 <div class="card-body p-4">
+                     <h5 class="fw-bold mb-3">About Company</h5>
+                     <p class="text-muted" style="white-space: pre-line;">{{ company.description }}</p>
+                 </div>
+             </div>
+             
+             <!-- Stats (Mock) -->
+             <div class="card border-0 shadow-sm">
+                 <div class="card-body p-4">
+                     <h5 class="fw-bold mb-3">Company Insights</h5>
+                     <div class="d-flex justify-content-between mb-2">
+                         <span class="text-muted">Founded</span>
+                         <span class="fw-bold">2010</span>
+                     </div>
+                     <div class="d-flex justify-content-between mb-2">
+                         <span class="text-muted">Size</span>
+                         <span class="fw-bold">50-200 Employees</span>
+                     </div>
+                     <div class="d-flex justify-content-between">
+                         <span class="text-muted">Open Jobs</span>
+                         <span class="fw-bold text-primary">{{ jobs.count }}</span>
+                     </div>
+                 </div>
+             </div>
+        </div>
+
+        <!-- Job Listings -->
+        <div class="col-lg-8">
+            <h3 class="fw-bold mb-4">Current Openings</h3>
+            
+            <div class="d-flex flex-column gap-3">
+                {% for job in jobs %}
+                <div class="card border-0 shadow-sm hover-shadow transition">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    <a href="{% url 'jobs:job_detail' job.slug %}" class="text-decoration-none text-dark stretched-link">{{ job.title }}</a>
+                                </h5>
+                                <div class="text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i> {{ job.location }} • 
+                                    <i class="fas fa-clock me-1"></i> {{ job.get_job_type_display }}
+                                </div>
+                                <div class="badge bg-light text-dark border">{{ job.category.name }}</div>
+                            </div>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3">Apply</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5 bg-light rounded">
+                    <i class="fas fa-briefcase fa-3x text-muted opacity-25 mb-3"></i>
+                    <h5>No open positions currently</h5>
+                    <p class="text-muted">Follow this company to get notified about future openings.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    .transition {
+        transition: all 0.2s ease;
+    }
+    .hover-text-white:hover {
+        color: #fff !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service - Netixa{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="fw-bold mb-4">Terms of Service</h1>
+            <p class="text-muted">Last Updated: {% now "F d, Y" %}</p>
+
+            <div class="card shadow-sm border-0 p-4">
+                <section class="mb-4">
+                    <h5>1. Acceptance of Terms</h5>
+                    <p>By accessing or using Netixa, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, please do not use our services.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>2. User Eligibility</h5>
+                    <p>You must be at least 18 years old to use our services. By using Netixa, you represent and warrant that you have the right, authority, and capacity to enter into this agreement.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>3. User Accounts</h5>
+                    <p>You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized use of your account.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>4. Content Guidelines</h5>
+                    <p>You agree not to post content that is illegal, misleading, discriminatory, or violates the rights of others. We reserve the right to remove any content that violates these terms.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>5. Limitation of Liability</h5>
+                    <p>To the fullest extent permitted by law, Netixa shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>6. Governing Law</h5>
+                    <p>These Terms shall be governed by and construed in accordance with the laws of India. Any disputes arising under these terms shall be subject to the exclusive jurisdiction of the courts in Kozhikode, Kerala.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>7. Contact Us</h5>
+                    <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@netixa.com">support@netixa.com</a>.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

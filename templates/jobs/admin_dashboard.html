@@ -1,0 +1,248 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | Netixa{% endblock %}
+
+{% block dashboard_title %}Portal Overview{% endblock %}
+
+{% block dashboard_content %}
+<div class="row g-4 mb-5">
+    <!-- Stats Cards -->
+    <div class="col-md-3">
+        <div class="stat-widget">
+            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value">{{ total_users }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-widget">
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div>
+                <div class="stat-label">Active Jobs</div>
+                <div class="stat-value">{{ total_jobs }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-widget">
+            <div class="stat-icon bg-purple bg-opacity-10 text-purple">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+                <div class="stat-label">Courses</div>
+                <div class="stat-value">{{ total_courses }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-widget border-primary border-opacity-25" style="background: var(--primary-light);">
+            <div class="stat-icon bg-primary text-white">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <div class="stat-label text-primary">Pending</div>
+                <div class="stat-value text-primary">{{ pending_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Onboarding Requests -->
+        <div class="card dashboard-card">
+            <div class="card-header bg-white border-bottom py-3 px-4">
+                <h5 class="mb-0 fw-bold text-dark">Onboarding Requests</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="px-4 py-3 text-muted small text-uppercase fw-bold border-0">User/Entity</th>
+                                <th class="py-3 text-muted small text-uppercase fw-bold border-0">Type</th>
+                                <th class="py-3 text-muted small text-uppercase fw-bold border-0">Joined</th>
+                                <th class="px-4 py-3 text-end text-muted small text-uppercase fw-bold border-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Employers -->
+                            {% for user in pending_employers %}
+                            <tr>
+                                <td class="px-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-building text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ user.username }}</div>
+                                            <div class="text-muted small">{{ user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">Employer</span></td>
+                                <td class="text-muted small">{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td class="px-4 text-end">
+                                    <div class="btn-group">
+                                        <a href="{% url 'jobs:verify_user' user.public_id 'approve' %}" class="btn btn-sm btn-success rounded-pill px-3 me-2">Approve</a>
+                                        <a href="{% url 'jobs:verify_user' user.public_id 'reject' %}" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            <!-- Colleges -->
+                            {% for user in pending_colleges %}
+                            <tr>
+                                <td class="px-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-university text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ user.username }}</div>
+                                            <div class="text-muted small">{{ user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">College</span></td>
+                                <td class="text-muted small">{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td class="px-4 text-end">
+                                    <div class="btn-group">
+                                        <a href="{% url 'jobs:verify_user' user.public_id 'approve' %}" class="btn btn-sm btn-success rounded-pill px-3 me-2">Approve</a>
+                                        <a href="{% url 'jobs:verify_user' user.public_id 'reject' %}" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if not pending_employers and not pending_colleges %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fas fa-check-circle fa-2x mb-3 text-success opacity-50"></i>
+                                    <p class="mb-0 fw-semibold">All institutions verified!</p>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job & Course Approvals Combined -->
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="card dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">Pending Jobs</h6>
+                        <span class="badge bg-dark rounded-pill">{{ pending_jobs.count }}</span>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush">
+                            {% for job in pending_jobs %}
+                            <li class="list-group-item px-4 py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ job.title }}</div>
+                                        <div class="text-muted text-xs">{{ job.company.name }}</div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <a href="{% url 'jobs:approve_job' job.slug %}" class="btn btn-sm btn-icon btn-light text-success" title="Approve"><i class="fas fa-check"></i></a>
+                                        <a href="{% url 'jobs:reject_job' job.slug %}" class="btn btn-sm btn-icon btn-light text-danger" title="Reject"><i class="fas fa-times"></i></a>
+                                    </div>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item px-4 py-4 text-center text-muted small">No pending jobs.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">Pending Courses</h6>
+                        <span class="badge bg-dark rounded-pill">{{ pending_courses.count }}</span>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush">
+                            {% for course in pending_courses %}
+                            <li class="list-group-item px-4 py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ course.title }}</div>
+                                        <div class="text-muted text-xs">{{ course.college.username }}</div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <a href="{% url 'jobs:approve_course' course.slug %}" class="btn btn-sm btn-icon btn-light text-success" title="Approve"><i class="fas fa-check"></i></a>
+                                        <a href="{% url 'jobs:reject_course' course.slug %}" class="btn btn-sm btn-icon btn-light text-danger" title="Reject"><i class="fas fa-times"></i></a>
+                                    </div>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item px-4 py-4 text-center text-muted small">No pending courses.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Sidebar -->
+    <div class="col-lg-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-white border-bottom py-3 px-4">
+                <h6 class="mb-0 fw-bold text-dark">Recent Signups</h6>
+            </div>
+            <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                <div class="list-group list-group-flush">
+                    {% for user in all_users %}
+                    <div class="list-group-item border-0 px-4 py-3">
+                        <div class="d-flex align-items-center">
+                            {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" class="rounded-circle me-3" style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="fas fa-user text-muted small"></i>
+                            </div>
+                            {% endif %}
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="small fw-bold text-dark text-truncate">{{ user.username }}</div>
+                                <div class="text-xs text-muted">{{ user.get_user_type_display }} • {{ user.date_joined|timesince }} ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top text-center py-3">
+                <a href="#" class="text-primary small fw-bold text-decoration-none">Advanced Analytics <i class="fas fa-chevron-right ms-1" style="font-size: 0.6rem;"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-purple { background-color: #9333ea; }
+    .btn-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border-radius: 6px;
+    }
+    .text-xs { font-size: 0.75rem; }
+</style>
+{% endblock %}

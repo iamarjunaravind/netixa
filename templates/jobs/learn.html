@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Career Learning Hub | Master New Skills at Netixa{% endblock %}
+
+{% block meta_description %}Browse top-tier courses in development, marketing, trade and design. Level up your career with Netixa Learn.{% endblock %}
+
+{% block og_title %}Master New Skills with Netixa Learn{% endblock %}
+{% block og_description %}Explore curated courses designed to accelerate your career growth.{% endblock %}
+{% block twitter_title %}Master New Skills with Netixa Learn{% endblock %}
+{% block twitter_description %}Explore curated courses designed to accelerate your career growth.{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-wrapper">
+    <div class="container">
+        <nav class="breadcrumb-nav">
+            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Learn</li>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Header & Stats -->
+    <div class="row mb-5 align-items-end">
+        <div class="col-lg-8">
+            <h1 class="display-4 fw-bold mb-2 text-dark">Expand Your Horizon</h1>
+            <p class="h5 text-muted fw-normal">Master new skills with courses curated for your career path.</p>
+        </div>
+        <div class="col-lg-4">
+            <div class="d-flex gap-4 justify-content-lg-end">
+                <div class="text-end">
+                    <h2 class="display-5 fw-bold text-primary mb-0">{{ courses.count }}</h2>
+                    <span class="text-uppercase text-xs fw-bold text-muted">Courses Available</span>
+                </div>
+                <div class="text-end">
+                    <h2 class="display-5 fw-bold text-dark mb-0">{{ certificates_count }}</h2>
+                    <span class="text-uppercase text-xs fw-bold text-muted">Certificates</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius: var(--radius-md);">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-th-large me-2 text-primary"></i>Categories</h5>
+                </div>
+                <div class="list-group list-group-flush" id="categoryAccordion">
+                    <a href="{% url 'jobs:learn' %}" class="list-group-item list-group-item-action py-3 {% if not current_category %}active fw-bold border-start border-4 border-primary{% endif %}">
+                        All Courses
+                    </a>
+                    {% for cat in parent_categories %}
+                    <div class="list-group-item p-0 border-0">
+                        <button class="w-100 text-start py-3 px-3 bg-light border-0 fw-bold text-dark text-uppercase small d-flex justify-content-between align-items-center" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#catCollapse{{ cat.id }}">
+                            {{ cat.name }}
+                            <i class="fas fa-chevron-down text-muted text-xs"></i>
+                        </button>
+                        <div id="catCollapse{{ cat.id }}" class="collapse {% if current_category in cat.subcategories.all|slugify %}show{% endif %} {% for sub in cat.subcategories.all %}{% if sub.slug == current_category %}show{% endif %}{% endfor %}">
+                            <div class="list-group list-group-flush ps-2">
+                                {% for sub in cat.subcategories.all %}
+                                <a href="{% url 'jobs:learn' %}?category={{ sub.slug }}" class="list-group-item list-group-item-action py-2 border-0 {% if current_category == sub.slug %}text-primary fw-bold bg-subtle{% endif %}">
+                                    <i class="fas fa-angle-right me-2 text-muted small"></i> {{ sub.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Grid -->
+        <div class="col-lg-9">
+            <div class="row g-3 mb-5">
+                {% for course in courses %}
+                <div class="col-md-3">
+                    <div class="card h-100 job-card-list p-0 d-block text-start shadow-sm" style="border-radius: var(--radius-md); transition: transform 0.2s;">
+                        <div class="ratio ratio-16x9 bg-light border-bottom position-relative overflow-hidden">
+                             {% if course.image %}
+                             <img src="{{ course.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ course.title }}">
+                             {% else %}
+                                {% with cat_name=course.category.parent.name|default:course.category.name %}
+                                 <img src="https://images.unsplash.com/photo-{% if cat_name == 'Development' %}1498050108023-c5249f4df085{% elif cat_name == 'Marketing' %}1460925895917-afdab827c52f{% elif cat_name == 'Trading' %}1611974714014-486ccf83244c{% elif cat_name == 'Designing' %}1558655146-d09347e92766{% else %}1544367567-0f2fcb009e0b{% endif %}?auto=format&fit=crop&w=800&q=80" 
+                                      class="w-100 h-100 object-fit-cover opacity-75" 
+                                      style="filter: brightness(0.9);"
+                                      alt="{{ course.title }}">
+                                {% endwith %}
+                             <div class="position-absolute h-100 w-100 top-0 start-0 d-flex align-items-center justify-content-center bg-dark bg-opacity-25">
+                                 <i class="fas {% if course.category.icon %}{{ course.category.icon }}{% else %}fa-book-open{% endif %} fa-3x text-white opacity-50"></i>
+                             </div>
+                             {% endif %}
+                             <span class="badge bg-white text-dark shadow-sm position-absolute top-0 end-0 m-2 text-xs fw-bold">{{ course.get_level_display }}</span>
+                        </div>
+                        <div class="card-body p-3 d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge badge-primary text-xs">{{ course.category.name }}</span>
+                            </div>
+                            <h6 class="fw-bold mb-2 text-dark line-clamp-2" style="min-height: 2.5em;">{{ course.title }}</h6>
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                                <span class="text-xs fw-bold text-muted"><i class="far fa-clock me-1"></i> {{ course.duration }}</span>
+                                <span class="fw-bold text-primary">${{ course.fees }}</span>
+                            </div>
+                             <a href="{% url 'jobs:course_detail' course.slug %}" class="btn btn-sm btn-outline-primary w-100 mt-2 fw-bold stretched-link">View</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" style="max-width: 200px; opacity: 0.8;" alt="No courses">
+                    <h4 class="mt-3 fw-bold">No courses found</h4>
+                    <p class="text-muted">Try selecting a different category or check back later.</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}">Previous</a></li>
+                {% endif %}
+                {% for i in elided_page_range %}
+                    {% if i == page_obj.paginator.ELLIPSIS %}
+                         <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                    {% else %}
+                        <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                            <a class="page-link" href="?page={{ i }}{% if current_category %}&category={{ current_category }}{% endif %}">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}">Next</a></li>
+                {% endif %}
+              </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

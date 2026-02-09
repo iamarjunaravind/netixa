@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - Netixa{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="fw-bold mb-4">Privacy Policy</h1>
+            <p class="text-muted">Last Updated: {% now "F d, Y" %}</p>
+
+            <div class="card shadow-sm border-0 p-4">
+                <section class="mb-4">
+                    <h5>1. Introduction</h5>
+                    <p>Welcome to Netixa ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience on our website and in using our services. This policy outlines our data handling practices and your rights under the Information Technology Act, 2000 and the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h5>2. Information We Collect</h5>
+                    <ul>
+                        <li><strong>Personal Information:</strong> Name, email address, phone number, mailing address, and job history provided during registration.</li>
+                        <li><strong>Professional Information:</strong> Resume/CV, education details, skills, and portfolio links.</li>
+                        <li><strong>Usage Data:</strong> IP address, browser type, device information, and interaction logs.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h5>3. How We Use Your Information</h5>
+                    <p>We use your data to:</p>
+                    <ul>
+                        <li>Connect you with potential employers or candidates.</li>
+                        <li>Provide personalized job recommendations and learning content.</li>
+                        <li>Verify your identity and prevent fraud.</li>
+                        <li>Comply with legal obligations under Indian law.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h5>4. Data Sharing and Disclosure</h5>
+                    <p>We may share your information with:</p>
+                    <ul>
+                        <li><strong>Employers:</strong> When you apply for a job or make your profile visible.</li>
+                        <li><strong>Service Providers:</strong> Third parties who assist in operating our platform (e.g., hosting, analytics).</li>
+                        <li><strong>Legal Authorities:</strong> If required by law or to protect our rights and safety.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h5>5. Your Rights</h5>
+                    <p>You have the right to access, correct, or delete your personal data. You can manage your information through your account settings or by contacting our Grievance Officer.</p>
+                </section>
+
+                <section class="mb-4 bg-light p-3 rounded border">
+                    <h5 class="text-primary"><i class="fas fa-user-shield me-2"></i>Grievance Officer</h5>
+                    <p class="mb-2">In accordance with the Information Technology Act, 2000 and rules made there under, the name and contact details of the Grievance Officer are provided below:</p>
+                    <p class="mb-1"><strong>Name:</strong> Mr. Aravind</p>
+                    <p class="mb-1"><strong>Designation:</strong> Grievance Officer</p>
+                    <p class="mb-1"><strong>Email:</strong> <a href="mailto:grievance@netixa.com">grievance@netixa.com</a></p>
+                    <p class="mb-0"><strong>Address:</strong> Netixa HQ, Cyber Park, Kozhikode, Kerala, India - 673001</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

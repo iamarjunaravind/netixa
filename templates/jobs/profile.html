@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - JobPortal{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-wrapper">
+    <div class="container">
+        <nav class="breadcrumb-nav">
+            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">Home</a></li>
+            <li class="breadcrumb-item active">My Profile</li>
+        </nav>
+    </div>
+</div>
+<div class="container py-4">
+    <!-- Header / Banner -->
+    <div class="card mb-4 overflow-hidden shadow-sm" style="border: none;">
+        <div class="profile-cover" style="height: 120px; background: linear-gradient(135deg, var(--primary-main), var(--primary-dark));"></div>
+        <div class="px-4 pb-4">
+            <div class="d-flex flex-column flex-md-row align-items-center align-items-md-end" style="margin-top: -60px;">
+                <div class="profile-avatar-wrapper mb-3 mb-md-0 me-md-4">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="profile-avatar">
+                    {% else %}
+                    <div class="profile-avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-identity flex-grow-1 text-center text-md-start mb-3 mb-md-0">
+                    <h1 class="h2 fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="h5 text-primary mb-1">{{ user.job_role|default:"Open to Opportunities" }}</p>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ user.address|default:"Location not specified" }}
+                    </p>
+                </div>
+                
+                <div class="profile-actions">
+                    <a href="{% url 'jobs:profile_edit' %}" class="btn btn-outline-primary shadow-sm">
+                        <i class="fas fa-pen me-1"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                         <div class="d-flex align-items-center text-muted">
+                            <i class="fas fa-envelope me-2"></i> {{ user.email }}
+                        </div>
+                    </div>
+                    {% if user.phone_number %}
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="fas fa-phone me-2"></i> {{ user.phone_number }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Bio & Documents -->
+        <div class="col-lg-4">
+            <div class="card mb-4 h-100">
+                <div class="card-body">
+                    <h3 class="h5 mb-3 fw-bold">About Me</h3>
+                    <div class="text-secondary">
+                        {{ user.bio|linebreaks|default:"<p class='text-muted fst-italic'>Share your professional background to attract employers.</p>" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+             <div class="card mb-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold mb-0">Resume / CV</h3>
+                        {% if user.cv %}
+                        <a href="{{ user.cv.url }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fas fa-download"></i></a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if user.cv %}
+                    <div class="p-3 bg-light rounded d-flex align-items-center">
+                        <i class="fas fa-file-pdf text-danger fa-2x me-3"></i>
+                        <div>
+                            <div class="fw-bold text-dark">Document.pdf</div>
+                            <small class="text-muted">Uploaded Resume</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 border border-dashed rounded text-muted">
+                        <i class="fas fa-upload mb-2"></i>
+                        <p class="small mb-0">No CV uploaded yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Education & Experience -->
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="h5 mb-4 fw-bold"><i class="fas fa-briefcase text-primary me-2"></i> Experience</h3>
+                    <div class="timeline">
+                        {% for exp in user.experience.all %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h5 class="mb-0 fw-bold">{{ exp.title }}</h5>
+                                    <small class="text-muted fw-bold">
+                                        {{ exp.start_date|date:"M Y"|default:"N/A" }} - {{ exp.end_date|date:"M Y"|default:"Present" }}
+                                    </small>
+                                </div>
+                                <p class="text-primary mb-2">{{ exp.company }}</p>
+                                <!-- If there's description, add it here -->
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted fst-italic">No experience details added.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="h5 mb-4 fw-bold"><i class="fas fa-graduation-cap text-primary me-2"></i> Education</h3>
+                    <div class="timeline">
+                        {% for edu in user.education.all %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h5 class="mb-0 fw-bold">{{ edu.course }}</h5>
+                                    <small class="text-muted fw-bold">
+                                        {{ edu.start_date|date:"M Y"|default:"N/A" }} - {{ edu.end_date|date:"M Y"|default:"Present" }}
+                                    </small>
+                                </div>
+                                <p class="text-secondary mb-0">{{ edu.college }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted fst-italic">No education details added.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-layout {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .profile-header-card {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .profile-banner-content {
+        padding: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .profile-avatar, .profile-avatar-placeholder {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        background: white;
+    }
+    .profile-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        background: var(--bg-surface);
+        color: var(--secondary-light);
+    }
+    
+    .btn-pill {
+        border-radius: 50px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .profile-identity {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 2rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-role {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        background: var(--bg-subtle);
+        padding: 1.5rem 2.5rem;
+        gap: 1.5rem;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        color: var(--primary-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .contact-item .label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--secondary-light);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+    }
+    
+    .contact-item .value {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--secondary-main);
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .section-heading {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .text-primary { color: var(--primary-main); }
+
+    /* Timeline */
+    .timeline {
+        border-left: 2px solid var(--border-light);
+        padding-left: 2rem;
+        margin-left: 0.5rem;
+        position: relative;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -2.4rem;
+        top: 0.25rem;
+        width: 14px;
+        height: 14px;
+        background: white;
+        border: 2px solid var(--primary-main);
+        border-radius: 50%;
+    }
+
+    .timeline-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .timeline-subtitle {
+        color: var(--secondary-main);
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .timeline-date {
+        color: var(--text-light);
+        font-size: 0.85rem;
+    }
+
+    /* Document Row */
+    .document-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-body);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+    }
+
+    .doc-icon {
+        font-size: 2rem;
+        color: #ef4444; 
+    }
+
+    .doc-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .text-sm { font-size: 0.85rem; }
+
+    @media (max-width: 768px) {
+        .profile-banner-content { flex-direction: column; text-align: center; }
+        .profile-contact-grid { grid-template-columns: 1fr; }
+        .profile-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}

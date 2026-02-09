@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Search Jobs | Netixa Professional Network{% endblock %}
+
+{% block meta_description %}Find your next professional leap among thousands of verified job listings at Netixa.{% endblock %}
+
+{% block og_title %}Job Opportunities at Netixa{% endblock %}
+{% block og_description %}Discover your next career move. Browse verified job openings on Netixa.{% endblock %}
+{% block twitter_title %}Job Opportunities at Netixa{% endblock %}
+{% block twitter_description %}Discover your next career move. Browse verified job openings on Netixa.{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-wrapper">
+    <div class="container">
+        <nav class="breadcrumb-nav">
+            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Jobs</li>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar (Filters) -->
+        <div class="col-lg-3 mb-4">
+            <!-- Sidebar content is already good, just keeping structure -->
+            <aside class="filters-sidebar" style="position: sticky; top: 100px; z-index: 100;">
+                <div class="card h-100 border-0 bg-transparent"> <!-- Adjusted card style -->
+                     <div class="card-body p-0">
+                        <div class="card border"> <!-- Inner card for styling -->
+                            <div class="card-body p-4">
+                                <h3 class="h5 fw-bold mb-4 border-bottom pb-3">Filter Jobs</h3>
+                                
+                                <form method="GET">
+                                    <div class="mb-4">
+                                        <label class="form-label text-uppercase text-xs fw-bold text-muted mb-2">Keywords</label>
+                                        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Title, skill, or company" class="form-control">
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label text-uppercase text-xs fw-bold text-muted mb-2">Location</label>
+                                        <input type="text" name="l" value="{{ request.GET.l }}" placeholder="City, state, or zip" class="form-control">
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label text-uppercase text-xs fw-bold text-muted mb-2">Job Type</label>
+                                        <select name="type" class="form-select">
+                                            <option value="">Any Job Type</option>
+                                            <option value="FT" {% if request.GET.type == 'FT' %}selected{% endif %}>Full-time</option>
+                                            <option value="PT" {% if request.GET.type == 'PT' %}selected{% endif %}>Part-time</option>
+                                            <option value="CT" {% if request.GET.type == 'CT' %}selected{% endif %}>Contract</option>
+                                            <option value="IN" {% if request.GET.type == 'IN' %}selected{% endif %}>Internship</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mt-4 pt-2">
+                                        <button type="submit" class="btn btn-primary w-100 mb-2 shadow-none">Apply Filters</button>
+                                        <a href="{% url 'jobs:job_list' %}" class="btn btn-ghost w-100 text-center btn-sm">Clear all filters</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Main Feed -->
+        <div class="col-lg-9">
+            <main class="job-feed">
+                <!-- Result Header -->
+                <div class="card border mb-3">
+                     <div class="card-body d-flex justify-content-between align-items-center p-3">
+                         <h2 class="h6 m-0 text-dark">
+                             {% if request.GET.q %}
+                                Results for "<span class="fw-bold">{{ request.GET.q }}</span>"
+                             {% else %}
+                                <span class="fw-bold">Recommended Jobs</span>
+                             {% endif %}
+                             <span class="text-muted fw-normal ms-2">({{ page_obj.paginator.count }})</span>
+                         </h2>
+                         <div class="d-flex align-items-center">
+                             <span class="text-muted text-sm me-2">Sort:</span>
+                             <select class="form-select form-select-sm border-0 bg-transparent fw-bold text-dark w-auto py-0 shadow-none" style="cursor: pointer;">
+                                 <option>Most relevant</option>
+                                 <option>Most recent</option>
+                             </select>
+                         </div>
+                     </div>
+                </div>
+
+                <!-- Job List -->
+                {% for job in jobs %}
+                <div class="job-card-list">
+                    <div class="job-logo">
+                        {% if job.company.logo %}
+                        <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" class="rounded-sm" style="width: 64px; height: 64px; object-fit: cover; border: 1px solid var(--border-light);">
+                        {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-light text-primary fw-bold rounded-sm" style="width: 64px; height: 64px; border: 1px solid var(--border-light); font-size: 1.5rem;">{{ job.company.name|first }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="job-content flex-grow-1">
+                        <a href="{% url 'jobs:job_detail' job.slug %}" class="h5 fw-bold text-dark text-decoration-none hover-text-primary mb-1 d-block">{{ job.title }}</a>
+                        <div class="text-dark fw-medium mb-1">{{ job.company.name }}</div>
+                        <div class="text-muted small mb-2">{{ job.location }} <span class="mx-1">•</span> {{ job.get_job_type_display }}</div>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                             {% if job.created_at|timesince|slice:":2" == "0m" %}
+                             <span class="badge badge-primary">New</span>
+                             {% else %}
+                             <span class="text-muted small">{{ job.created_at|timesince }} ago</span>
+                             {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="job-actions d-flex flex-column gap-2 align-items-end">
+                        <a href="{% url 'jobs:job_detail' job.slug %}" class="btn btn-primary px-4 shadow-none">Apply</a>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-ghost btn-icon btn-save p-2" data-job-id="{{ job.slug }}" title="Save Job">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="card border text-center py-5">
+                    <div class="py-4">
+                        <i class="fas fa-search fa-3x text-muted mb-3 opacity-25"></i>
+                        <h3 class="h5 fw-bold">No jobs found</h3>
+                        <p class="text-muted mb-4">Try adjusting your filters</p>
+                        <a href="{% url 'jobs:job_list' %}" class="btn btn-outline">Clear Filters</a>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <div class="pagination-container d-flex justify-content-center gap-1 mt-4 pb-5">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn btn-sm btn-outline-secondary px-3"><i class="fas fa-chevron-left"></i></a>
+                    {% endif %}
+                    
+                    {% for i in elided_page_range %}
+                        {% if i == page_obj.paginator.ELLIPSIS %}
+                            <span class="btn btn-sm btn-ghost disabled text-muted border-0">...</span>
+                        {% else %}
+                            <a href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+                               class="btn btn-sm {% if page_obj.number == i %}btn-primary{% else %}btn-outline-secondary{% endif %} fw-bold" 
+                               style="width: 38px;">
+                               {{ i }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn btn-sm btn-outline-secondary px-3"><i class="fas fa-chevron-right"></i></a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Filter Toggle (Fixed Bottom) -->
+<div class="mobile-filter-bar d-lg-none">
+    <button class="btn btn-primary w-100 mobile-filter-toggle shadow-lg">Filter Jobs <i class="fas fa-filter ms-2"></i></button>
+</div>
+
+<style>
+    @media (max-width: 991px) {
+        .mobile-filter-bar {
+            display: block;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            z-index: 900;
+        }
+        
+        .filters-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 2000;
+            padding: 1rem;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+            display: block !important; /* Force block to allow transition */
+        }
+        
+        .filters-sidebar.show-mobile {
+            transform: translateY(0);
+        }
+        
+        .filters-sidebar .card {
+            border: none !important;
+            height: auto !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Save Job Logic
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie("csrftoken");
+
+    document.querySelectorAll(".btn-save").forEach((btn) => {
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          const jobId = this.dataset.jobId;
+          const icon = this.querySelector("i");
+          // Toggle UI immediately for responsiveness
+          const isSaved = icon.classList.contains('fas'); // currently saved
+          
+          if(isSaved) {
+              icon.classList.replace('fas', 'far');
+              icon.style.color = 'var(--secondary-light)';
+          } else {
+              icon.classList.replace('far', 'fas');
+              icon.style.color = 'var(--primary-main)';
+          }
+
+          fetch(`/job/${jobId}/toggle-save/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": csrftoken,
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+               // Re-sync if needed, but optimistic UI is better
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+    });
+    
+    // Mobile Filter Toggle Implementation
+    const mobileToggle = document.querySelector('.mobile-filter-toggle');
+    const sidebar = document.querySelector('.filters-sidebar');
+    
+    if(mobileToggle && sidebar) {
+        // Add Close Button to Sidebar if not exists
+        if (!sidebar.querySelector('.mobile-close-btn')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'btn btn-ghost position-absolute top-0 end-0 m-3 mobile-close-btn d-lg-none';
+            closeBtn.innerHTML = '<i class="fas fa-times fa-lg"></i>';
+            sidebar.querySelector('.card-body').prepend(closeBtn);
+            
+            closeBtn.addEventListener('click', () => {
+                sidebar.classList.remove('show-mobile');
+                document.body.style.overflow = ''; // Restore scrolling
+            });
+        }
+
+        mobileToggle.addEventListener('click', () => {
+             sidebar.classList.add('show-mobile');
+             document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+    }
+});
+</script>
+{% endblock %}

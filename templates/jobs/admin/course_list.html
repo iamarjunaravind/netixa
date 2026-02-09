@@ -1,0 +1,89 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Course Approvals | Netixa Admin{% endblock %}
+
+{% block dashboard_title %}Course Management{% endblock %}
+
+{% block dashboard_content %}
+<div class="card dashboard-card">
+    <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold">All Courses</h6>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                Filter by Status
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="?">All Courses</a></li>
+                <li><a class="dropdown-item" href="?status=pending">Pending</a></li>
+                <li><a class="dropdown-item" href="?status=active">Active</a></li>
+                <li><a class="dropdown-item" href="?status=rejected">Rejected</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="px-4 py-3 text-muted small text-uppercase border-0">Course Title</th>
+                        <th class="py-3 text-muted small text-uppercase border-0">College</th>
+                        <th class="py-3 text-muted small text-uppercase border-0">Status</th>
+                        <th class="py-3 text-muted small text-uppercase border-0">Created</th>
+                        <th class="px-4 py-3 text-end text-muted small text-uppercase border-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr>
+                        <td class="px-4">
+                            <div class="fw-bold text-dark">{{ course.title }}</div>
+                            <div class="text-xs text-muted">{{ course.category.name }} • {{ course.level|title|default:"Beginner" }}</div>
+                        </td>
+                        <td class="small">{{ course.college.username }}</td>
+                        <td>
+                            {% if course.status == 'active' %}
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Live</span>
+                            {% elif course.status == 'pending' %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">Pending</span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">{{ course.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ course.created_at|date:"M d, Y" }}</td>
+                        <td class="px-4 text-end">
+                            <div class="btn-group">
+                                {% if course.status == 'pending' %}
+                                <a href="{% url 'jobs:approve_course' course.slug %}" class="btn btn-sm btn-light text-success"><i class="fas fa-check"></i></a>
+                                <a href="{% url 'jobs:reject_course' course.slug %}" class="btn btn-sm btn-light text-danger"><i class="fas fa-times"></i></a>
+                                {% endif %}
+                                <a href="{% url 'jobs:course_detail' course.slug %}" class="btn btn-sm btn-light text-primary"><i class="fas fa-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">No courses found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <div class="card-footer bg-white border-top py-3">
+        <nav>
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

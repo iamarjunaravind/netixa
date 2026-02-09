@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} | Netixa Learn{% endblock %}
+
+{% block meta_description %}{{ course.description|truncatewords:30 }}{% endblock %}
+
+{% block og_title %}{{ course.title }}{% endblock %}
+{% block og_description %}{{ course.description|truncatewords:25 }}{% endblock %}
+{% if course.image %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ course.image.url }}{% endblock %}
+{% endif %}
+
+{% block extra_css %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Course",
+  "name": "{{ course.title }}",
+  "description": "{{ course.description|escapejs }}",
+  "provider": {
+    "@type": "Organization",
+    "name": "{{ course.college.username }}",
+    "sameAs": "{{ request.scheme }}://{{ request.get_host }}"
+  },
+  "educationalLevel": "{{ course.get_level_display }}",
+  "about": "{{ course.category.name }}",
+  "offers": {
+    "@type": "Offer",
+    "category": "Paid",
+    "price": "{{ course.fees }}",
+    "priceCurrency": "USD"
+  },
+  "courseCode": "{{ course.slug }}",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "Online",
+    "duration": "{{ course.duration }}"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-wrapper">
+    <div class="container">
+        <nav class="breadcrumb-nav">
+            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'jobs:learn' %}">Learn</a></li>
+            <li class="breadcrumb-item active">{{ course.title }}</li>
+        </nav>
+    </div>
+</div>
+
+<div class="bg-light pb-5 border-bottom">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge badge-primary mb-3">{{ course.category.name }}</span>
+                <h1 class="display-4 fw-bold mb-3 text-dark">{{ course.title }}</h1>
+                <p class="h5 text-muted fw-normal mb-4">{{ course.description|truncatewords:20 }}</p>
+                
+                <div class="d-flex align-items-center gap-4 text-muted small fw-bold text-uppercase">
+                    <span><i class="far fa-clock me-2"></i>{{ course.duration }}</span>
+                    <span><i class="fas fa-signal me-2"></i>{{ course.get_level_display }}</span>
+                    <span><i class="fas fa-users me-2"></i>{{ course.students_enrolled }} Enrolled</span>
+                    <span class="text-warning"><i class="fas fa-star me-2"></i>{{ course.rating }}</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mt-4">
+                     <div class="d-flex align-items-center">
+                        <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                            <i class="fas fa-university text-primary"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0 fw-bold">Offered by</h6>
+                            <p class="small text-muted mb-0">{{ course.college.username }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <h3 class="fw-bold mb-4">About this Course</h3>
+            <div class="prose text-muted mb-5">
+                {{ course.description|linebreaks }}
+            </div>
+
+            <h3 class="fw-bold mb-4">What you'll learn</h3>
+            <div class="row g-3 mb-5">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-check-circle text-success mt-1 me-3"></i>
+                        <p class="mb-0">Industry relevant skills and tools</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-check-circle text-success mt-1 me-3"></i>
+                        <p class="mb-0">Hands-on projects and assignments</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="fw-bold mb-4">Course Content</h3>
+            <div class="accordion border rounded-4 overflow-hidden mb-5" id="syllabusAccordion">
+                {% for module in modules %}
+                <div class="accordion-item border-0 border-bottom">
+                    <h2 class="accordion-header" id="head{{ module.id }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} py-4 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#coll{{ module.id }}">
+                            <div class="d-flex justify-content-between w-100 me-3">
+                                <span>{{ module.title }}</span>
+                                <span class="text-muted small fw-normal">{{ module.lessons.count }} Lessons</span>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="coll{{ module.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#syllabusAccordion">
+                        <div class="accordion-body p-0">
+                            <div class="list-group list-group-flush">
+                                {% for lesson in module.lessons.all %}
+                                <div class="list-group-item py-3 px-4 d-flex align-items-center">
+                                    <i class="fas fa-play-circle text-muted me-3"></i>
+                                    <div>
+                                        <div class="fw-bold small">{{ lesson.title }}</div>
+                                        <div class="text-xs text-muted">{{ lesson.duration }}</div>
+                                    </div>
+                                    {% if is_enrolled %}
+                                    <a href="{% url 'jobs:lesson_detail' lesson.slug %}" class="btn btn-sm btn-ghost ms-auto fw-bold">Watch</a>
+                                    {% else %}
+                                    <i class="fas fa-lock text-muted ms-auto"></i>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-5 text-center text-muted">No modules added yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+             <div class="card border-0 shadow-sm sticky-top" style="top: 100px; border-radius: var(--radius-lg);">
+                <div class="ratio ratio-16x9 bg-light border-bottom overflow-hidden">
+                     {% if course.image %}
+                     <img src="{{ course.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ course.title }}">
+                     {% else %}
+                     {% with cat_name=course.category.parent.name|default:course.category.name %}
+                     <img src="https://images.unsplash.com/photo-{% if cat_name == 'Development' %}1498050108023-c5249f4df085{% elif cat_name == 'Marketing' %}1460925895917-afdab827c52f{% elif cat_name == 'Trading' %}1611974714014-486ccf83244c{% elif cat_name == 'Designing' %}1558655146-d09347e92766{% else %}1544367567-0f2fcb009e0b{% endif %}?auto=format&fit=crop&w=800&q=80" 
+                          class="w-100 h-100 object-fit-cover"
+                          alt="{{ course.title }}">
+                     {% endwith %}
+                     {% endif %}
+                </div>
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-1">${{ course.fees|floatformat:2 }}</h2>
+                    <p class="text-muted text-xs text-decoration-line-through mb-4">$299.00</p>
+                    
+                    {% if is_enrolled %}
+                    <div class="alert alert-success d-flex align-items-center py-2 px-3 border-0" style="border-radius: var(--radius-sm);">
+                        <i class="fas fa-check-circle me-2"></i> <span class="fw-bold small">Enrolled</span>
+                    </div>
+                    <div class="mt-auto d-flex flex-column gap-2 mb-4">
+                        {% with first_lesson=modules.0.lessons.all.0 %}
+                            {% if first_lesson %}
+                            <a href="{% url 'jobs:lesson_detail' first_lesson.slug %}" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">Go To Class</a>
+                            {% endif %}
+                        {% endwith %}
+                        <a href="{% url 'jobs:student_dashboard' %}" class="btn btn-outline-primary w-100 py-2 fw-bold">Go To Dashboard</a>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'jobs:course_enroll' course.slug %}" class="btn btn-primary w-100 py-3 fw-bold shadow-sm mb-4">Enroll Now</a>
+                    {% endif %}
+
+                    <!-- Social Sharing -->
+                    <div class="mt-4 pt-4 border-top">
+                        <h6 class="fw-bold mb-3 small text-uppercase">Share Course</h6>
+                        <div class="d-flex flex-column gap-2">
+                            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn linkedin w-100 justify-content-center">
+                                <i class="fab fa-linkedin-in"></i> LinkedIn
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20course:%20{{ course.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn twitter w-100 justify-content-center">
+                                <i class="fab fa-twitter"></i> Twitter
+                            </a>
+                            <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20course:%20{{ course.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn whatsapp w-100 justify-content-center">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

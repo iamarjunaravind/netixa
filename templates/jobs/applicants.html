@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Applicants for: {{ job.title }}</h2>
+        <div>
+             <a href="{% url 'jobs:job_kanban' job.slug %}" class="btn btn-outline-primary me-2"><i class="fas fa-columns me-2"></i>Kanban Board</a>
+             <a href="{% url 'jobs:employer_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    {% if subscription %}
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span>
+            Current Plan: <strong>{{ subscription.get_plan_type_display }}</strong>
+            {% if subscription.plan_type == 'normal' %}
+            (Upgrade to Premium to see phone numbers and messaging)
+            {% endif %}
+        </span>
+        {% if subscription.plan_type == 'normal' %}
+        <button class="btn btn-primary btn-sm">Upgrade to Premium</button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% for app in applications %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if app.applicant.profile_picture %}
+                        <img src="{{ app.applicant.profile_picture.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                            {{ app.applicant.first_name|first }}
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0">{{ app.applicant.first_name }} {{ app.applicant.last_name }}</h5>
+                            <small class="text-muted">Applied: {{ app.applied_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Cover Letter:</h6>
+                        <p class="text-muted small">{{ app.cover_letter|truncatewords:30 }}</p>
+                    </div>
+
+                    <div class="contact-info p-3 bg-light rounded mb-3">
+                        <p class="mb-1"><i class="fas fa-envelope"></i> {{ app.applicant.email }}</p>
+                        
+                        {% if subscription.plan_type == 'premium' %}
+                            <p class="mb-1"><i class="fas fa-phone"></i> {{ app.applicant.phone_number|default:"Not provided" }}</p>
+                            <p class="mb-0"><i class="fas fa-map-marker-alt"></i> {{ app.applicant.address|default:"Not provided" }}</p>
+                        {% else %}
+                            <p class="mb-1 text-muted"><i class="fas fa-phone"></i> [Hidden - Premium Only]</p>
+                            <p class="mb-0 text-muted"><i class="fas fa-map-marker-alt"></i> [Hidden - Premium Only]</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ app.resume.url }}" class="btn btn-outline-primary btn-sm w-100" target="_blank">View Resume</a>
+                        {% if subscription.plan_type == 'premium' %}
+                        <a href="mailto:{{ app.applicant.email }}" class="btn btn-success btn-sm w-100">Message</a>
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>Message (Premium)</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <p class="text-muted">No applicants yet.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

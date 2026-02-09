@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Netixa",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.png' %}",
+  "sameAs": [
+    "https://www.linkedin.com/company/netixa",
+    "https://twitter.com/netixa"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "grievance@netixa.com",
+    "contactType": "Grievance Officer"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Netixa",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}{% url 'jobs:job_list' %}?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-layout">
+            <div class="hero-content">
+                <h1 class="display-3 mb-4">
+                    Find your next <br>
+                    <span class="text-primary">professional leap.</span>
+                </h1>
+                <p class="h5 text-muted mb-5 fw-normal" style="line-height: 1.6;">
+                    Join 10,000+ professionals discovering opportunities at top companies. <br>
+                    <strong>Real connections. Verified employers. No noise.</strong>
+                </p>
+                
+                {% if not user.is_authenticated %}
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'signup' %}" class="btn btn-primary btn-lg shadow-none">Get Started</a>
+                        <a href="{% url 'jobs:job_list' %}" class="btn btn-outline btn-lg">Browse Jobs</a>
+                    </div>
+                {% else %}
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'jobs:job_list' %}" class="btn btn-primary btn-lg shadow-none">Find Jobs</a>
+                        <a href="{% url 'jobs:profile' %}" class="btn btn-outline btn-lg">Update Profile</a>
+                    </div>
+                {% endif %}
+
+                <!-- Suggested Searches -->
+                <div class="mt-5 pt-4 border-top border-light">
+                    <p class="text-sm fw-bold text-uppercase text-muted mb-3" style="letter-spacing: 0.05em;">Trending Searches</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'jobs:job_list' %}?q=Remote" class="badge badge-primary text-decoration-none">Remote</a>
+                        <a href="{% url 'jobs:job_list' %}?q=Engineering" class="badge badge-primary text-decoration-none">Engineering</a>
+                        <a href="{% url 'jobs:job_list' %}?q=Product" class="badge badge-primary text-decoration-none">Product Design</a>
+                        <a href="{% url 'jobs:job_list' %}?q=Marketing" class="badge badge-primary text-decoration-none">Marketing</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-image">
+                <!-- Sharp, rectangular image container -->
+                <div style="position: relative; border: 2px solid var(--primary-main); padding: 1rem;">
+                    <img src="{% static 'img/hero_image.jpg' %}" alt="Professional Networking" class="img-fluid" style="display: block;" onerror="this.src='https://placehold.co/600x500/f0f7ff/0056b3?text=NETIXA';">
+                    <!-- Brutalist accent box -->
+                    <div style="position: absolute; bottom: -1rem; right: -1rem; background: var(--primary-main); color: white; padding: 1rem 2rem; font-weight: 800; font-size: 1.2rem;">
+                        HIRED.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container" style="padding: 3rem 1rem;">
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+            <h2 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 2rem; letter-spacing: -0.02em;">Explore collaborative articles</h2>
+            <div class="pill-grid">
+                {% for cat in article_categories %}
+                    <a href="{% url 'jobs:article_list' %}?category={{ cat.slug }}" class="pill-tag">{{ cat.name }}</a>
+                {% endfor %}
+                <a href="{% url 'jobs:article_list' %}" class="pill-tag" style="color: var(--primary-main); border-color: var(--primary-main);">Show all</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container" style="padding: 3rem 1rem; background: white;">
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+             <h2 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 2rem; letter-spacing: -0.02em;">Find the right job or internship for you</h2>
+             <div class="pill-grid" id="job-category-list">
+                {% for cat in job_categories %}
+                    <a href="{% url 'jobs:job_list' %}?category={{ cat.id }}" class="pill-tag {% if forloop.counter > 10 %}d-none extra-cat{% endif %}">{{ cat.name }}</a>
+                {% endfor %}
+             </div>
+             {% if job_categories.count > 10 %}
+             <div class="mt-4">
+                 <button id="show-more-btn" class="btn btn-ghost" style="background: rgba(0,0,0,0.05); font-weight: 600; font-size: 1rem; padding: 0.75rem 1.5rem; border-radius: 24px;">
+                    Show more <i class="fas fa-chevron-down" style="margin-left: 5px;"></i>
+                 </button>
+             </div>
+             {% endif %}
+
+             <script>
+                document.getElementById('show-more-btn')?.addEventListener('click', function() {
+                    const hiddenCats = document.querySelectorAll('.extra-cat');
+                    const isExpanded = this.getAttribute('data-expanded') === 'true';
+                    
+                    if (isExpanded) {
+                        // Collapse
+                        hiddenCats.forEach(cat => cat.classList.add('d-none'));
+                        this.innerHTML = 'Show more <i class="fas fa-chevron-down" style="margin-left: 5px;"></i>';
+                        this.setAttribute('data-expanded', 'false');
+                    } else {
+                        // Expand
+                        hiddenCats.forEach(cat => cat.classList.remove('d-none'));
+                        this.innerHTML = 'Show less <i class="fas fa-chevron-up" style="margin-left: 5px;"></i>';
+                        this.setAttribute('data-expanded', 'true');
+                    }
+                });
+             </script>
+        </div>
+    </div>
+</section>
+
+<section class="container" style="padding: 4rem 1rem; background: #f1f5f9;">
+    <div style="display: flex; gap: 4rem; align-items: center; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+            <h2 style="font-size: 2.5rem; font-weight: 400; color: #b24020;">Post your job for millions of people to see</h2>
+        </div>
+        <div style="flex: 1; min-width: 300px; display: flex; justify-content: flex-start;">
+             <a href="{% url 'jobs:employer_dashboard' %}" class="btn btn-outline" style="border-radius: 24px; color: #b24020; border-color: #b24020; padding: 1rem 2rem; font-size: 1.1rem;">Post a job</a>
+        </div>
+    </div>
+</section>
+
+<section class="container" style="padding: 4rem 1rem;">
+    {% if user.is_authenticated and suggested_connections %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-size: 1.75rem; font-weight: 700;">People you may know</h2>
+            <a href="{% url 'jobs:network' %}" class="btn btn-outline" style="border-radius: 24px;">See all</a>
+        </div>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
+            {% for student in suggested_connections %}
+            <div class="col">
+                <div class="card h-100 text-center p-4 shadow-sm bg-white d-flex flex-column" style="border: 1px solid var(--border-light); border-radius: 12px;">
+                    <div class="mb-3">
+                        {% if student.profile_picture %}
+                            <img src="{{ student.profile_picture.url }}" alt="{{ student.username }}" class="rounded-circle" width="70" height="70" style="object-fit: cover; border: 2px solid var(--primary-light);">
+                        {% else %}
+                            <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center mx-auto shadow-sm" style="width: 70px; height: 70px; font-size: 1.5rem; font-weight: 700; border: 2px solid var(--primary-light);">
+                                {{ student.username.0|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1 text-dark">{{ student.first_name }} {{ student.last_name|default:student.username }}</h6>
+                        <p class="text-muted small mb-0" style="line-height: 1.4;">{{ student.job_role|default:"Student" }}</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'jobs:network' %}" class="btn btn-primary btn-sm rounded-pill px-4 w-100 fw-bold">Connect</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="d-flex justify-between align-center" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: var(--shadow-sm);">
+            <div class="d-flex align-center gap-2">
+                 <i class="fas fa-user-friends" style="font-size: 2rem; color: var(--secondary-light);"></i>
+                 <h2 style="font-size: 1.5rem; margin: 0;">Connect with people who can help</h2>
+            </div>
+            <a href="{% url 'jobs:network' %}" class="btn btn-outline" style="border-radius: 24px;">Find people you know</a>
+        </div>
+    {% endif %}
+    <div class="d-flex justify-between align-center mt-4" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: var(--shadow-sm);">
+        <div class="d-flex align-center gap-2">
+             <i class="fas fa-chalkboard-teacher" style="font-size: 2rem; color: var(--secondary-light);"></i>
+             <h2 style="font-size: 1.5rem; margin: 0;">Learn the skills you need to succeed</h2>
+        </div>
+        <!-- Select dropdown style for learning topics -->
+         <select class="form-control" style="width: auto; min-width: 250px;">
+             <option>Choose a topic to learn about</option>
+         </select>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }} | Netixa Articles{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:article_list' %}">Articles</a></li>
+                    {% if article.category %}
+                        <li class="breadcrumb-item"><a href="{% url 'jobs:article_list' %}?category={{ article.category.slug }}">{{ article.category.name }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ article.title|truncatechars:30 }}</li>
+                </ol>
+            </nav>
+
+            <!-- Article Header -->
+            <header class="mb-5">
+                <h1 class="fw-bold display-5 mb-3">{{ article.title }}</h1>
+                <div class="d-flex align-items-center mb-4">
+                    {% if article.author.profile_picture %}
+                        <img src="{{ article.author.profile_picture.url }}" alt="{{ article.author.username }}" class="rounded-circle me-2" width="40" height="40">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            {{ article.author.username.0|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <div class="fw-bold">{{ article.author.get_full_name|default:article.author.username }}</div>
+                        <div class="text-muted small">Published on {{ article.created_at|date:"F d, Y" }}</div>
+                    </div>
+                </div>
+
+                {% if article.image %}
+                    <img src="{{ article.image.url }}" alt="{{ article.title }}" class="img-fluid rounded shadow-sm w-100 mb-4">
+                {% endif %}
+            </header>
+
+            <!-- Article Content -->
+            <article class="article-content fs-5" style="line-height: 1.8;">
+                {{ article.content|linebreaks }}
+            </article>
+
+            <!-- Share / Actions -->
+            <div class="mt-5 pt-4 border-top">
+                <h5 class="fw-bold mb-3">Share this article</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary"><i class="fab fa-linkedin"></i> LinkedIn</button>
+                    <button class="btn btn-outline-info"><i class="fab fa-twitter"></i> Twitter</button>
+                    <button class="btn btn-outline-dark"><i class="fas fa-link"></i> Copy Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

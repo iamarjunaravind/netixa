@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume - {{ applicant.get_full_name }}</title>
+    <!-- Use standard font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --text: #333;
+            --text-light: #666;
+            --border: #eee;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            line-height: 1.6; 
+            color: var(--text);
+            background: #f0f2f5; 
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            background: #fff;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .name-title h1 {
+            font-size: 32px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .name-title h2 {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+        .contact-info {
+            text-align: right;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        .contact-info div { margin-bottom: 5px; }
+        .contact-info i { width: 20px; color: var(--primary); text-align: center; }
+
+        /* Sections */
+        .section { margin-bottom: 25px; }
+        .section-title {
+            font-size: 16px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .experience-item, .education-item {
+            margin-bottom: 15px;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .item-title { font-weight: 700; font-size: 15px; }
+        .item-subtitle { color: var(--secondary); font-weight: 500; font-size: 15px; }
+        .item-date { font-size: 13px; color: var(--text-light); font-style: italic; }
+        .item-body { font-size: 14px; color: var(--text-light); white-space: pre-line; margin-top: 5px; }
+
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .skill-item { font-size: 14px; border-left: 3px solid var(--accent); padding-left: 10px; }
+
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        .print-btn:hover { transform: translateY(-3px); }
+
+        @media print {
+            body { background: #fff; }
+            .page { 
+                width: 100%; 
+                margin: 0; 
+                box-shadow: none; 
+                padding: 0;
+            }
+            .print-btn { display: none; }
+            @page { margin: 20mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <button onclick="window.print()" class="print-btn">
+        <i class="fas fa-print"></i> Download / Print
+    </button>
+
+    <div class="page">
+        <!-- Header -->
+        <header class="header">
+            <div class="name-title">
+                <h1>{{ applicant.first_name }} {{ applicant.last_name }}</h1>
+                <h2>{{ applicant.job_role|default:"Professional" }}</h2>
+            </div>
+            <div class="contact-info">
+                <div>{{ applicant.email }} <i class="fas fa-envelope"></i></div>
+                {% if applicant.phone_number %}
+                <div>{{ applicant.phone_number }} <i class="fas fa-phone"></i></div>
+                {% endif %}
+                {% if applicant.address %}
+                <div>{{ applicant.address }} <i class="fas fa-map-marker-alt"></i></div>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Summary -->
+        {% if applicant.bio %}
+        <section class="section">
+            <h3 class="section-title">Professional Summary</h3>
+            <div class="item-body" style="font-size: 14px;">
+                {{ applicant.bio }}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Experience -->
+        {% if experience %}
+        <section class="section">
+            <h3 class="section-title">Experience</h3>
+            {% for exp in experience %}
+            <div class="experience-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ exp.title }}</div>
+                        <div class="item-subtitle">{{ exp.company }}</div>
+                    </div>
+                    <div class="item-date">
+                        {{ exp.start_date|date:"M Y" }} - 
+                        {% if exp.is_current %}Present{% else %}{{ exp.end_date|date:"M Y" }}{% endif %}
+                    </div>
+                </div>
+                <!-- Assuming description field exists or we add it later 
+                <div class="item-body">{{ exp.description }}</div>
+                -->
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Education -->
+        {% if education %}
+        <section class="section">
+            <h3 class="section-title">Education</h3>
+            {% for edu in education %}
+            <div class="education-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ edu.course }}</div>
+                        <div class="item-subtitle">{{ edu.college }}</div>
+                    </div>
+                    <div class="item-date">
+                        {{ edu.start_date|date:"Y" }} - {{ edu.end_date|date:"Y" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        
+    </div>
+</body>
+</html>

@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Netixa - Professional Hiring & Learning Platform{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Netixa connects top talent with world-class employers while providing a comprehensive learning ecosystem for modern careers.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}jobs, hiring, recruitment, professional network, online courses, career growth, India jobs{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{% block og_title %}Netixa - Professional Hiring Platform{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Connecting top talent with world-class employers.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-image.jpg' %}{% endblock %}">
+    <meta property="og:site_name" content="Netixa">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta property="twitter:title" content="{% block twitter_title %}Netixa - Professional Hiring Platform{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}Connecting top talent with world-class employers.{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-image.jpg' %}{% endblock %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/apple-touch-icon.png' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <a href="{% url 'jobs:home' %}" class="logo">
+                <span style="color: var(--primary-main); font-weight: 800; font-size: 2.2rem; letter-spacing: -0.05em;">NETIXA</span>
+            </a>
+            
+            <!-- Mobile Toggle -->
+            <button class="mobile-menu-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Navigation -->
+            <nav class="nav-wrapper">
+                <ul class="nav-menu">
+                    <!-- Standard Nav Items (Everyone or Just User?) -->
+                    <!-- Let's show these primarily for logged in users or general browsing -->
+                    <li class="nav-item">
+                        <a href="{% url 'jobs:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'jobs:network' %}" class="nav-link {% if request.resolver_match.url_name == 'network' %}active{% endif %}">
+                            <i class="fas fa-user-friends"></i>
+                            <span>Connect</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'jobs:job_list' %}" class="nav-link {% if 'job' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Jobs</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'jobs:learn' %}" class="nav-link {% if request.resolver_match.url_name == 'learn' %}active{% endif %}">
+                            <i class="fas fa-book-reader"></i>
+                            <span>Learn</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'jobs:messaging' %}" class="nav-link {% if request.resolver_match.url_name == 'messaging' %}active{% endif %}">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Messaging</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'jobs:notifications' %}" class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+                            <i class="fas fa-bell"></i>
+                        </a>
+                    </li>
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" id="meDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="{{ user.first_name }}">
+                                {% else %}
+                                <i class="fas fa-user-circle fa-lg"></i>
+                                {% endif %}
+                                <span class="d-flex align-items-center gap-1">{{ user.first_name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="meDropdown" style="border-radius: var(--radius-md); min-width: 200px;">
+                                <li>
+                                    <div class="px-3 py-2">
+                                        <div class="fw-bold text-dark">{{ user.first_name }} {{ user.last_name }}</div>
+                                        <div class="text-muted text-xs text-truncate">{{ user.email }}</div>
+                                        <div class="badge bg-light text-muted mt-1 fw-normal border" style="font-size: 0.65rem;">{{ user.get_user_type_display }}</div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                
+                                <!-- Role Specific Dashboards -->
+                                {% if user.is_admin_user %}
+                                <li><a class="dropdown-item fw-bold text-primary" href="{% url 'jobs:admin_dashboard' %}"><i class="fas fa-tools me-2"></i> Admin Panel</a></li>
+                                {% endif %}
+                                
+                                {% if user.is_college_user %}
+                                <li><a class="dropdown-item fw-bold" href="{% url 'jobs:college_dashboard' %}"><i class="fas fa-university me-2"></i> College Portal</a></li>
+                                {% endif %}
+                                
+                                {% if user.is_employer_user %}
+                                <li><a class="dropdown-item fw-bold" href="{% url 'jobs:employer_dashboard' %}"><i class="fas fa-building me-2"></i> Employer Panel</a></li>
+                                {% endif %}
+
+                                <li><a class="dropdown-item fw-bold" href="{% url 'jobs:student_dashboard' %}"><i class="fas fa-graduation-cap me-2"></i> My Learning</a></li>
+                                <li><a class="dropdown-item fw-bold" href="{% url 'jobs:profile' %}"><i class="fas fa-user-circle me-2"></i> My Profile</a></li>
+                                <li><a class="dropdown-item fw-bold" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{% url 'logout' %}" method="post" class="px-3 py-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-ghost text-muted w-100 text-start p-0 fw-bold">Sign Out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Role-based Secondary Nav -->
+                        <li class="nav-item ps-3" style="border-left: 1px solid var(--border-light);">
+                            {% if user.is_employer_user %}
+                            <a href="{% url 'jobs:job_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">Post Job</a>
+                            {% elif user.is_college_user %}
+                            <a href="{% url 'jobs:course_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">New Course</a>
+                            {% elif user.is_admin_user %}
+                            <span class="badge bg-dark text-white rounded-pill px-3">ADMIN</span>
+                            {% endif %}
+                        </li>
+                    {% else %}
+                        <!-- Guest Actions -->
+                        <div class="nav-auth-buttons">
+                            <a href="{% url 'login' %}" class="btn btn-primary" style="border-radius: 24px; padding: 0.5rem 1.5rem; font-weight: 600;">Join now</a>
+                        </div>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simple mobile toggle
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            const nav = document.querySelector('.nav-wrapper');
+            if(toggle && nav) {
+                toggle.addEventListener('click', () => {
+                   nav.classList.toggle('active');
+                   // Change icon
+                   const icon = toggle.querySelector('i');
+                   if (nav.classList.contains('active')) {
+                       icon.classList.remove('fa-bars');
+                       icon.classList.add('fa-times');
+                   } else {
+                       icon.classList.remove('fa-times');
+                       icon.classList.add('fa-bars');
+                   }
+                });
+            }
+        });
+    </script>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer mt-auto">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Brand & Social -->
+                <div class="col-lg-4 col-md-6 footer-link-group">
+                    <a href="{% url 'jobs:home' %}" class="footer-logo">
+                        <span style="color: var(--primary-main);">Netixa</span><i class="fas fa-briefcase text-primary"></i>
+                    </a>
+                    <p class="mb-4" style="max-width: 300px;">
+                        The professional community for modern careers. Connect with opportunities, grow your skills, and succeed in the global market.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-icon" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <!-- For Candidates -->
+                <div class="col-lg-2 col-md-6 footer-link-group">
+                    <h5>For Candidates</h5>
+                    <a href="{% url 'jobs:job_list' %}" class="footer-link">Browse Jobs</a>
+                    <a href="{% url 'jobs:network' %}" class="footer-link">Networking</a>
+                    <a href="{% url 'jobs:learn' %}" class="footer-link">Learning Hub</a>
+                    <a href="{% url 'jobs:profile' %}" class="footer-link">Career Profile</a>
+                    <a href="#" class="footer-link">Job Alerts</a>
+                </div>
+
+                <!-- For Employers -->
+                <div class="col-lg-2 col-md-6 footer-link-group">
+                    <h5>For Employers</h5>
+                    <a href="{% url 'jobs:employer_dashboard' %}" class="footer-link">Post a Job</a>
+                    <a href="{% url 'jobs:employer_dashboard' %}" class="footer-link">Employer Brand</a>
+                    <a href="#" class="footer-link">Talent Solutions</a>
+                    <a href="#" class="footer-link">Resources</a>
+                </div>
+
+                <!-- Support & Compliance -->
+                <div class="col-lg-4 col-md-6 footer-link-group">
+                    <h5>Compliance & Support</h5>
+                    <div class="compliance-box">
+                        <p><strong>Grievance Officer:</strong> Aravind</p>
+                        <p><strong>Email:</strong> <a href="mailto:grievance@netixa.com" class="text-primary text-decoration-none">grievance@netixa.com</a></p>
+                        <p class="mb-0 small text-muted">Acknowledge within 24 hours, respond within 15 days.</p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'jobs:guidelines' %}" class="footer-link d-inline-block me-3">Community Guidelines</a>
+                        <a href="#" class="footer-link d-inline-block">Support Center</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="footer-bottom">
+                <div class="copyright">
+                    © {% now "Y" %} Netixa. Made for the professional world.
+                </div>
+                <div class="footer-legal-links">
+                    <a href="{% url 'jobs:privacy' %}" class="footer-link mb-0">Privacy Policy</a>
+                    <a href="{% url 'jobs:terms' %}" class="footer-link mb-0">Terms of Service</a>
+                    <a href="#" class="footer-link mb-0">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS (Required for Dropdowns) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

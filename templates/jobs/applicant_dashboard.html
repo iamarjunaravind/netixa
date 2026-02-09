@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Applicant Dashboard - Netixa{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-wrapper">
+    <div class="container">
+        <nav class="breadcrumb-nav">
+            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Applicant Dashboard</li>
+        </nav>
+    </div>
+</div>
+<div class="container py-4">
+    <header class="mb-4">
+        <h1>My Applications</h1>
+        <p class="text-muted">Track and manage your diverse career opportunities.</p>
+    </header>
+
+    {% if applications %}
+    <div class="applications-grid">
+        {% for application in applications %}
+        <div class="card app-card">
+            <div class="app-card-header">
+                <div class="app-info">
+                    <h3 class="app-job-title">
+                        <a href="{% url 'jobs:job_detail' application.job.slug %}" class="text-dark">{{ application.job.title }}</a>
+                    </h3>
+                    <p class="app-company">{{ application.job.company.name }}</p>
+                </div>
+                <!-- Status Badge -->
+                {% if application.status == 'applied' %}
+                <span class="status-pill status-warning">Applied</span>
+                {% elif application.status == 'accepted' %}
+                 <span class="status-pill status-success">Accepted</span>
+                {% elif application.status == 'rejected' %}
+                <span class="status-pill status-danger">Rejected</span>
+                {% else %}
+                <span class="status-pill status-secondary">{{ application.get_status_display }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="app-card-body">
+                <div class="meta-row">
+                    <span><i class="far fa-calendar-alt"></i> Applied: {{ application.applied_at|date:"M d, Y" }}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> {{ application.job.location }}</span>
+                </div>
+            </div>
+
+            <div class="app-card-footer">
+                <a href="{% url 'jobs:job_detail' application.job.slug %}" class="btn btn-outline w-100">View Job Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card text-center p-5">
+        <div class="mb-3 text-muted" style="font-size: 3rem;">
+            <i class="far fa-file-alt"></i>
+        </div>
+        <h3>No applications yet</h3>
+        <p class="text-muted mb-4">Start exploring thousands of job opportunities today.</p>
+        <a href="{% url 'jobs:job_list' %}" class="btn btn-primary btn-pill-lg">Browse Openings</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .applications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .app-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .app-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .app-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .app-job-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+    .app-job-title a:hover {
+        text-decoration: underline;
+        color: var(--primary-main);
+    }
+
+    .app-company {
+        font-size: 0.9rem;
+        color: var(--secondary-main);
+    }
+
+    .status-pill {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+        margin-left: 0.5rem;
+    }
+    .status-warning { background: #fff7ed; color: #c2410c; }
+    .status-success { background: #ecfdf5; color: #047857; }
+    .status-danger { background: #fef2f2; color: #b91c1c; }
+    .status-secondary { background: var(--bg-subtle); color: var(--secondary-light); }
+
+    .app-card-body {
+        flex: 1;
+        margin-bottom: 1.5rem;
+    }
+
+    .meta-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--secondary-light);
+    }
+    .meta-row i {
+        width: 20px;
+        text-align: center;
+        margin-right: 0.25rem;
+    }
+
+    .app-card-footer {
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-light);
+    }
+</style>
+{% endblock %}

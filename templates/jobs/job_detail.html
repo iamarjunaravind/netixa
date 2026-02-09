@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ job.title }} at {{ job.company.name }} | Netixa{% endblock %}
+
+{% block meta_description %}{{ job.description|truncatewords:30 }}{% endblock %}
+
+{% block og_title %}{{ job.title }} at {{ job.company.name }}{% endblock %}
+{% block og_description %}{{ job.description|truncatewords:25 }}{% endblock %}
+{% if job.company.logo %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ job.company.logo.url }}{% endblock %}
+{% endif %}
+
+{% block extra_css %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "JobPosting",
+  "title": "{{ job.title }}",
+  "description": "{{ job.description|escapejs }}",
+  "datePosted": "{{ job.created_at|date:'Y-m-d' }}",
+  "validThrough": "{{ job.created_at|date:'Y-m-d'|add:'30 days' }}",
+  "employmentType": "{% if job.job_type == 'full_time' %}FULL_TIME{% elif job.job_type == 'part_time' %}PART_TIME{% elif job.job_type == 'contract' %}CONTRACTOR{% elif job.job_type == 'internship' %}INTERN{% else %}OTHER{% endif %}",
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": "{{ job.company.name }}",
+    "sameAs": "{{ job.company.website|default:'' }}",
+    "logo": "{% if job.company.logo %}{{ request.scheme }}://{{ request.get_host }}{{ job.company.logo.url }}{% endif %}"
+  },
+  "jobLocation": {
+    "@type": "Place",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ job.location|default:'India' }}",
+      "addressRegion": "KA",
+      "addressCountry": "IN"
+    }
+  },
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "value": "{{ job.salary_range|default:'Negotiable' }}",
+      "unitText": "MONTH"
+    }
+  },
+  "skills": "Software Development, Engineering",
+  "experienceRequirements": "2-5 years",
+  "occupationalCategory": "Technology"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-wrapper">
+    <nav class="breadcrumb-nav">
+        <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:job_list' %}">Jobs</a></li>
+        <li class="breadcrumb-item active">{{ job.title }}</li>
+    </nav>
+</div>
+
+<div class="container job-detail-layout">
+    <!-- Main Content -->
+    <main class="job-main">
+        <!-- Header Card -->
+        <section class="card job-header-card">
+            <div class="job-header-top">
+                <div class="header-logo-wrapper">
+                    {% if job.company.logo %}
+                    <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" class="header-logo">
+                    {% else %}
+                    <div class="header-logo-placeholder">{{ job.company.name|first }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                     <h1 class="job-title-hero">{{ job.title }}</h1>
+                     <div class="job-meta-hero">
+                         <span class="company-name">{{ job.company.name }}</span>
+                         <span class="meta-dot">•</span>
+                         <span class="location">{{ job.location }}</span>
+                         <span class="meta-dot">•</span>
+                         <span class="posted-date text-muted">{{ job.created_at|timesince }} ago</span>
+                         {% if job.is_new %}
+                         <span class="meta-dot">•</span>
+                         <span class="badge badge-primary">New</span>
+                         {% endif %}
+                     </div>
+                </div>
+            </div>
+
+             <div class="job-header-actions">
+                  <div class="action-group-primary">
+                      <a href="{% url 'jobs:apply' job.slug %}" class="btn btn-primary btn-lg px-4 shadow-none">
+                          Apply Now <i class="fas fa-external-link-alt" style="margin-left: 8px; font-size: 0.9em;"></i>
+                      </a>
+                      <button class="btn btn-outline btn-lg btn-save-hero" data-job-id="{{ job.slug }}">
+                          <i class="{% if job.is_saved %}fas{% else %}far{% endif %} fa-bookmark"></i> 
+                          <span>{% if job.is_saved %}Saved{% else %}Save{% endif %}</span>
+                      </button>
+                      <a href="mailto:grievance@netixa.com?subject=Report Job: {{ job.title }}&body=I would like to report this job ({{ job.slug }}) because..." class="btn btn-ghost btn-lg text-muted" title="Report this job">
+                          <i class="fas fa-flag"></i>
+                      </a>
+                  </div>
+             </div>
+        </section>
+
+        <!-- Description Section -->
+        <section class="card job-description-card">
+            <h2 class="section-heading">About the job</h2>
+            <div class="description-body">
+                {{ job.description|linebreaks }}
+            </div>
+            
+            <!-- Skills / Requirements (Mocked if not in model yet, or placeholder) -->
+            <div class="skills-section mt-4">
+                <h3 class="section-subheading">Skills & Requirements</h3>
+                <div class="d-flex gap-2 flex-wrap">
+                    <!-- Standard placeholder skills based on job content logic could go here -->
+                     <span class="badge badge-primary">Full-time</span>
+                     <span class="badge badge-primary">{{ job.get_job_type_display }}</span>
+                     <span class="badge badge-primary">Mid-Senior level</span>
+                </div>
+            </div>
+            <!-- Social Sharing -->
+            <div class="share-container">
+                <div class="share-title">Share this opportunity</div>
+                <div class="share-buttons">
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn linkedin">
+                        <i class="fab fa-linkedin-in"></i> LinkedIn
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20job:%20{{ job.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn twitter">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20job:%20{{ job.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="share-btn copy">
+                        <i class="fas fa-copy"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="job-detail-sidebar">
+        <!-- About Company -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h3 class="h5 fw-bold mb-3">About the company</h3>
+                
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    {% if job.company.logo %}
+                    <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded d-flex align-items-center justify-content-center bg-light text-primary fw-bold" style="width: 48px; height: 48px;">{{ job.company.name|first }}</div>
+                    {% endif %}
+                    <div>
+                    <div class="fw-bold">{{ job.company.name }}</div>
+                    <div class="text-muted text-sm">Internet & Technology</div>
+                    </div>
+                </div>
+                
+                <p class="text-muted text-sm mb-4">
+                    {{ job.company.description|default:"We are a leading company in our industry, dedicated to innovation and excellence."|truncatewords:25 }}
+                </p>
+                
+                <a href="#" class="btn btn-outline w-100">View Company</a>
+            </div>
+        </div>
+
+        <!-- Similar Jobs (Placeholder) -->
+        <div class="card">
+            <div class="card-body p-4">
+                <h3 class="h5 fw-bold mb-3">Similar Jobs</h3>
+                <div class="d-flex flex-column gap-3">
+                    <!-- Static placeholders for UI feel -->
+                    <div class="border-bottom pb-2">
+                        <div class="fw-bold cursor-pointer hover-text-primary">Senior Developer</div>
+                        <div class="text-muted text-sm">Tech Corp</div>
+                    </div>
+                    <div class="border-bottom pb-2">
+                        <div class="fw-bold cursor-pointer hover-text-primary">Frontend Engineer</div>
+                        <div class="text-muted text-sm">WebSolutions Inc</div>
+                    </div>
+                    <a href="{% url 'jobs:job_list' %}" class="btn btn-ghost w-100 text-sm">See more jobs</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<style>
+    /* Page Specific Styles */
+    .job-detail-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 2rem;
+        padding-bottom: 3rem;
+    }
+
+    /* Header Card */
+    .job-header-card {
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--primary-light); /* Highlight header */
+    }
+
+    .job-header-top {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: flex-start;
+    }
+
+    .header-logo, .header-logo-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .header-logo-placeholder {
+        background: var(--primary-light);
+        color: var(--primary-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .job-title-hero {
+        font-size: 2rem;
+        color: var(--text-main);
+        margin-bottom: 0.5rem;
+        line-height: 1.1;
+    }
+
+    .job-meta-hero {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+    }
+    
+    .meta-dot { color: var(--border-focus); margin: 0 4px; }
+    
+    .job-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* Description */
+    .job-description-card {
+        padding: 2.5rem;
+    }
+    
+    .section-heading {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+    }
+    
+    .description-body {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--text-secondary);
+    }
+    
+    .section-subheading {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .job-detail-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .job-header-top {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .action-group-primary {
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+            flex-direction: column;
+        }
+        .btn { width: 100%; }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Simple Save Logic reuse
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+              const cookies = document.cookie.split(";");
+              for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === name + "=") {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie("csrftoken");
+
+        const saveBtn = document.querySelector('.btn-save-hero');
+        if(saveBtn) {
+            saveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const jobId = this.dataset.jobId;
+                const icon = this.querySelector('i');
+                const text = this.querySelector('span');
+                
+                // Toggle UI
+                const isSaved = icon.classList.contains('fas');
+                if(isSaved) {
+                    icon.classList.replace('fas', 'far');
+                    text.textContent = 'Save';
+                } else {
+                    icon.classList.replace('far', 'fas');
+                    text.textContent = 'Saved';
+                }
+
+                fetch(`/job/${jobId}/toggle-save/`, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": csrftoken, "Content-Type": "application/json" }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
